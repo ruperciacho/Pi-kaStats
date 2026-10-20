@@ -257,7 +257,7 @@ def main():
         if snap:
             cup_rows = [r for r in cup_rows if r['comp'] != 'UCL'] + snap
             cup_codes.add('UCL')
-            cup_source = (cup_source + ', ' if cup_source else '') + 'zapis Ligi Mistrzów z 20.10.2026'
+            cup_source = (cup_source + ', ' if cup_source else '') + 'Sportradar (Liga Mistrzów, aktualizacja raz w tygodniu)'
 
     # Drużyny: najpierw ligowe (wyznaczają grupę), potem pucharowe dopasowane po kluczu
     teams, order, bykey = {}, [], {}
