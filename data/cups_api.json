@@ -1,5 +1,10 @@
 {
 "2026": {
+"_errors": {
+"UCL": "API-Football: {'plan': 'Free plans do not have access to this season, try from 2022 to 2024.'}",
+"UECL": "API-Football: {'plan': 'Free plans do not have access to this season, try from 2022 to 2024.'}",
+"UEL": "API-Football: {'plan': 'Free plans do not have access to this season, try from 2022 to 2024.'}"
+},
 "_ok": []
 }
 }
