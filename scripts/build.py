@@ -182,11 +182,13 @@ def load_cups(apikey, season):
     sc = cache[str(season)]
     budget = [API_BUDGET]
     ok_codes = set(code for code in sc.get('_ok', []))
+    errors = {}
     for code, label, _, lid in CUPS:
         try:
             fixtures = api_get(f'/fixtures?league={lid}&season={season}&status=FT-AET-PEN', apikey, budget)
-        except RuntimeError as e:
+        except Exception as e:
             log('Puchar', label, '- brak danych:', e)
+            errors[code] = str(e)[:300]
             continue
         ok_codes.add(code)
         todo = []
@@ -215,6 +217,7 @@ def load_cups(apikey, season):
                        'v': [f['goals']['home'], f['goals']['away'], h[0], a[0], h[1], a[1], h[2], a[2], h[3], a[3],
                              h[4], a[4], h[5], a[5]]}
     sc['_ok'] = sorted(ok_codes)
+    sc['_errors'] = errors   # ostatnie błędy API (do diagnozy)
     os.makedirs(DATA, exist_ok=True)
     json.dump(cache, open(cache_path, 'w', encoding='utf-8'), ensure_ascii=False, indent=0, sort_keys=True)
     rows = [v for k, v in sc.items() if not k.startswith('_')]
