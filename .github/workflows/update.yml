@@ -3,7 +3,7 @@ name: Aktualizacja danych
 on:
   schedule:
     - cron: '37 5 * * *'   # codziennie 7:37 latem / 6:37 zimą (czas polski)
-  workflow_dispatch:       # przycisk „Run workflow” = ręczne odświeżenie
+  workflow_dispatch:       # ręczne uruchomienie z zakładki Actions (opcjonalnie)
 
 permissions:
   contents: write

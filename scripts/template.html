@@ -92,9 +92,6 @@ h2{font-family:var(--display);font-weight:600;font-size:22px;line-height:1.2;mar
 .rv{font-family:var(--display);font-weight:600;font-size:24px;text-align:right;font-variant-numeric:tabular-nums}
 .empty{margin:8px 4px 12px;color:var(--ink-2)}
 .note{font-size:13px;color:var(--muted);margin:0}
-.refresh-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin:12px 0 0;font-size:13px;color:var(--muted)}
-.refresh{display:inline-block;font:500 14px var(--body);color:var(--accent);border:1px solid var(--accent);border-radius:999px;padding:6px 14px;text-decoration:none}
-.refresh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .rank-meta{font-size:13px;color:var(--muted);margin:0 4px 6px}
 @media (max-width:370px){.kv{font-size:26px}h1{font-size:34px}.frow{grid-template-columns:1fr;gap:6px}}
 @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
@@ -105,7 +102,6 @@ h2{font-family:var(--display);font-weight:600;font-size:22px;line-height:1.2;mar
     <p class="eyebrow">Sezon 2026/27 · stan na __ASOF__</p>
     <h1>Statystyki drużyn</h1>
     <p class="facts" id="facts"></p>
-    <p class="refresh-row" id="refreshRow" hidden><a class="refresh" id="refresh" href="#" target="_blank" rel="noopener">Odśwież dane</a><span>Otwiera GitHub: stuknij „Run workflow”, nowe dane są tu po 1–2 minutach.</span></p>
   </header>
 
   <div class="seg big" id="tabs" aria-label="Widok">
@@ -299,8 +295,7 @@ function render(){
   if(!(S.rcomp in COMP)&&S.rcomp!=='TOP5')S.rcomp='TOP5';
   team?renderTeam():renderRank();
 }
-$('note').textContent=D.note+' Kartki to żółte i czerwone razem. Dotknij drużyny w rankingu, żeby zobaczyć jej mecze.';
-if(D.refresh){$('refresh').href=D.refresh;$('refreshRow').hidden=false;}
+$('note').textContent=D.note+' Kartki to żółte i czerwone razem. Dane odświeżają się codziennie rano. Dotknij drużyny w rankingu, żeby zobaczyć jej mecze.';
 render();
 try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',render);}catch(e){}
 new MutationObserver(render).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});

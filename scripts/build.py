@@ -307,10 +307,8 @@ def main():
     note = 'Źródła: football-data.co.uk (ligi)' + (f', {cup_source} (puchary)' if cup_source else '') + '. xG tylko tam, gdzie źródło je podaje.'
     if missing:
         note += ' Brak danych: ' + ', '.join(missing) + '.'
-    repo = os.environ.get('GITHUB_REPOSITORY', '')
     data = {'teams': [[n, abbr[n], teams[n]] for n in order], 'matches': matches, 'comps': comps, 'cups': cups,
-            'groups': groups, 'note': note,
-            'refresh': f'https://github.com/{repo}/actions/workflows/update.yml' if repo else ''}
+            'groups': groups, 'note': note}
 
     tpl = open(os.path.join(ROOT, 'scripts', 'template.html'), encoding='utf-8').read()
     try:

@@ -6,7 +6,7 @@ Wszystko działa za darmo na GitHubie, bez serwera:
 
 - **GitHub Actions** (`.github/workflows/update.yml`) codziennie rano pobiera dane, buduje `site/index.html` i wypycha go na gałąź `gh-pages`.
 - **GitHub Pages** serwuje stronę z gałęzi `gh-pages`.
-- Przycisk **Odśwież dane** na stronie otwiera tę akcję. Stuknij **Run workflow**, a po 1–2 minutach strona ma nowe dane.
+- W razie potrzeby akcję można też uruchomić ręcznie: **Actions → Aktualizacja danych → Run workflow**.
 
 ## Źródła
 
