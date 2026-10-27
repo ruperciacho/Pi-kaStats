@@ -1,9 +1,11 @@
 """Buduje stronę ze statystykami drużyn.
 
 Ligi (top 5): pliki CSV z football-data.co.uk, pobierane przy każdym uruchomieniu.
-Puchary: API-Football (Liga Mistrzów, Liga Europy, Liga Konferencji), jeśli jest ustawiony
-sekret API_FOOTBALL_KEY. Pobrane mecze trafiają do data/cups_api.json, więc każdy mecz
-pobiera się tylko raz. Bez klucza używany jest zapis Ligi Mistrzów z data/ucl_snapshot.csv.
+Puchary (Liga Mistrzów, Liga Europy, Liga Konferencji): publiczne dane meczowe ESPN
+(nieoficjalne API, bez klucza). Pobrane mecze trafiają do data/cups_espn.json, więc każdy
+mecz pobiera się tylko raz, a stan ostatniego pobrania jest w polu "_status".
+Rezerwa: API-Football (sekret API_FOOTBALL_KEY) dla pucharów, których ESPN nie dało,
+a dla Ligi Mistrzów zapis z data/ucl_snapshot.csv.
 
 Wynik: site/index.html (statyczna strona, bez serwera).
 """
@@ -26,6 +28,8 @@ SITE = os.path.join(ROOT, 'site')
 LEAGUES = [('E0', 'Premier League', 'PL'), ('SP1', 'La Liga', 'LL'), ('I1', 'Serie A', 'SA'),
            ('D1', 'Bundesliga', 'BL'), ('F1', 'Ligue 1', 'L1')]
 CUPS = [('UCL', 'Liga Mistrzów', 'LM', 2), ('UEL', 'Liga Europy', 'LE', 3), ('UECL', 'Liga Konferencji', 'LK', 848)]
+ESPN_SLUG = {'UCL': 'uefa.champions', 'UEL': 'uefa.europa', 'UECL': 'uefa.europa.conf'}
+ESPN = 'https://site.api.espn.com/apis/site/v2/sports/soccer/'
 API = 'https://v3.football.api-sports.io'
 API_BUDGET = 90          # zapytań na jedno uruchomienie (darmowy plan: 100 dziennie)
 API_PAUSE = 7            # sekundy między zapytaniami (limit na minutę)
@@ -53,6 +57,12 @@ NAME = {
     'Marseille': 'Olympique Marsylia', 'Lyon': 'Olympique Lyon', 'Olympique Lyonnais': 'Olympique Lyon',
     'St Etienne': 'Saint-Étienne', 'Nice': 'OGC Nice', 'Stade Brestois 29': 'Brest', 'Stade Rennais': 'Rennes',
     'Le Havre AC': 'Le Havre',
+    # nazwy ESPN
+    'Internazionale': 'Inter', 'Brighton & Hove Albion': 'Brighton', 'Wolverhampton Wanderers': 'Wolverhampton',
+    'Olympique de Marseille': 'Olympique Marsylia', 'Stade Brestois': 'Brest', 'RC Strasbourg Alsace': 'Strasbourg',
+    'LOSC Lille': 'Lille', 'Lille OSC': 'Lille', 'AS Monaco': 'Monaco', 'TSG Hoffenheim': 'Hoffenheim',
+    '1. FSV Mainz 05': 'Mainz 05', 'Mainz 05': 'Mainz 05', 'AFC Bournemouth': 'Bournemouth', 'Leeds United': 'Leeds United',
+    'Deportivo Alavés': 'Alavés', 'Celta de Vigo': 'Celta Vigo', 'RCD Espanyol': 'Espanyol', 'Real Oviedo': 'Oviedo',
 }
 SNAPSHOT_NAME = {'Real Madrid': 'Real Madryt'}
 ABBR = {
@@ -67,7 +77,7 @@ ABBR = {
     'Hamburger SV': 'HSV', 'Union Berlin': 'FCU', 'Hellas Verona': 'VER', 'FC Barcelona': 'BAR',
 }
 SKIP_WORDS = {'FC', 'AS', 'AC', 'RC', 'SC', 'CF', 'SV', 'VFB', 'VFL', 'OGC', 'TSG', '1', 'SSC', 'US', 'CD', 'UD',
-              'RCD', 'CA', 'FK', 'SK', 'NK', 'PFC', 'AFC', 'BK', 'IF', 'KV', 'KRC', 'RSC'}
+              'RCD', 'CA', 'FK', 'SK', 'NK', 'PFC', 'AFC', 'BK', 'IF', 'KV', 'KRC', 'RSC', 'FSV'}
 
 
 def log(*a):
@@ -76,6 +86,11 @@ def log(*a):
 
 def plain(s):
     return unicodedata.normalize('NFKD', s).encode('ascii', 'ignore').decode()
+
+
+def _key(name):
+    words = [w for w in re.split(r"[\s\-./']+", plain(name).upper()) if w and w not in SKIP_WORDS]
+    return ' '.join(words)
 
 
 def key(name):
@@ -224,6 +239,104 @@ def load_cups(apikey, season):
     return rows, ok_codes
 
 
+def _int(v):
+    try:
+        return int(float(str(v).strip().rstrip('%')))
+    except (TypeError, ValueError):
+        return None
+
+
+def load_espn(season_start, codes):
+    """Puchary z ESPN. Zwraca (mecze, kody pucharów z danymi)."""
+    from datetime import date
+    cache_path = os.path.join(DATA, 'cups_espn.json')
+    cache = json.load(open(cache_path, encoding='utf-8')) if os.path.exists(cache_path) else {}
+    sc = cache.setdefault(str(season_start), {})
+    status = {}
+    start = date(season_start, 9, 1)                      # eliminacje kończą się w sierpniu
+    end = min(datetime.now(timezone.utc).date(), date(season_start + 1, 6, 30))
+    for code in codes:
+        base = ESPN + ESPN_SLUG[code]
+        st = {'znalezione': 0, 'zakonczone': 0, 'nowe': 0, 'bez_statystyk': 0}
+        try:
+            events, d = [], start
+            while d <= end:
+                d2 = min(end, d + timedelta(days=30))
+                js = json.loads(http_get(f'{base}/scoreboard?dates={d:%Y%m%d}-{d2:%Y%m%d}&limit=500'))
+                events += js.get('events') or []
+                d = d2 + timedelta(days=1)
+        except Exception as e:
+            st['blad'] = 'scoreboard: ' + str(e)[:200]
+            status[code] = st
+            log(code, 'ESPN niedostępne:', e)
+            continue
+        seen = set()
+        for ev in events:
+            eid = str(ev.get('id'))
+            if eid in seen:
+                continue
+            seen.add(eid)
+            st['znalezione'] += 1
+            comp = (ev.get('competitions') or [{}])[0]
+            stype = ((comp.get('status') or ev.get('status') or {}).get('type') or {})
+            if not (stype.get('completed') or stype.get('state') == 'post'):
+                continue
+            st['zakonczone'] += 1
+            if eid in sc:
+                continue
+            cs = comp.get('competitors') or []
+            home = next((c for c in cs if c.get('homeAway') == 'home'), None)
+            away = next((c for c in cs if c.get('homeAway') == 'away'), None)
+            if not home or not away:
+                continue
+            tid = lambda c: str((c.get('team') or {}).get('id') or c.get('id'))
+            stats = {}
+            try:
+                summ = json.loads(http_get(f'{base}/summary?event={eid}'))
+                for t in (summ.get('boxscore') or {}).get('teams') or []:
+                    stats[str((t.get('team') or {}).get('id'))] = {s.get('name'): s.get('displayValue', s.get('value'))
+                                                                   for s in t.get('statistics') or []}
+                if '_nazwy_statystyk' not in status and stats:
+                    status['_nazwy_statystyk'] = sorted(next(iter(stats.values())).keys())
+            except Exception as e:
+                st['blad_summary'] = str(e)[:200]
+            time.sleep(0.3)
+            # zapas: statystyki z samego scoreboardu
+            for c in (home, away):
+                if not stats.get(tid(c)) and c.get('statistics'):
+                    stats[tid(c)] = {s.get('name'): s.get('displayValue') for s in c['statistics']}
+            h, a = stats.get(tid(home)), stats.get(tid(away))
+            if not h or not a or _int(h.get('totalShots')) is None or _int(a.get('totalShots')) is None:
+                st['bez_statystyk'] += 1
+                continue
+            cards = {tid(home): 0, tid(away): 0}
+            have_cards = all(x.get('yellowCards') is not None for x in (h, a))
+            if not have_cards:   # kartki z listy zdarzeń meczu
+                for det in comp.get('details') or []:
+                    t = str((det.get('team') or {}).get('id'))
+                    if t in cards and (det.get('yellowCard') or det.get('redCard')):
+                        cards[t] += 1
+            def side(x, t):
+                g = lambda n: _int(x.get(n)) or 0
+                cr = g('yellowCards') + g('redCards') if have_cards else cards[t]
+                return [g('totalShots'), g('shotsOnTarget'), g('wonCorners'), g('foulsCommitted'), cr]
+            hv, av = side(h, tid(home)), side(a, tid(away))
+            sc[eid] = {'date': (ev.get('date') or comp.get('date') or '')[:10], 'comp': code,
+                       'home': (home.get('team') or {}).get('displayName', '?'),
+                       'away': (away.get('team') or {}).get('displayName', '?'),
+                       'v': [_int(home.get('score')) or 0, _int(away.get('score')) or 0,
+                             hv[0], av[0], hv[1], av[1], hv[2], av[2], hv[3], av[3], hv[4], av[4], None, None]}
+            st['nowe'] += 1
+        status[code] = st
+        log(code, 'ESPN:', st)
+    sc['_status'] = status
+    sc['_aktualizacja'] = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')
+    os.makedirs(DATA, exist_ok=True)
+    json.dump(cache, open(cache_path, 'w', encoding='utf-8'), ensure_ascii=False, indent=0, sort_keys=True)
+    rows = [v for k, v in sc.items() if not k.startswith('_')]
+    return rows, {r['comp'] for r in rows}
+
+
 def load_snapshot(season_start):
     p = os.path.join(DATA, 'ucl_snapshot.csv')
     if not os.path.exists(p):
@@ -244,26 +357,40 @@ def main():
     now = datetime.now(timezone.utc)
     season_start, code_season = season_codes(now)
     league_rows = load_leagues(code_season)
+    all_cups = [c for c, *_ in CUPS]
+    cup_rows, src = [], {}
+    try:
+        rows, ok = load_espn(season_start, all_cups)
+        cup_rows += rows
+        src.update({c: 'ESPN' for c in ok})
+    except Exception as e:  # puchary nie mogą zablokować aktualizacji lig
+        log('Puchary z ESPN niedostępne:', e)
     apikey = os.environ.get('API_FOOTBALL_KEY', '').strip()
-    cup_rows, cup_codes, cup_source = [], set(), ''
-    if apikey:
+    if apikey and any(c not in src for c in all_cups):
         try:
-            cup_rows, cup_codes = load_cups(apikey, season_start)
-            cup_source = 'API-Football'
-        except Exception as e:  # puchary nie mogą zablokować aktualizacji lig
+            rows, ok = load_cups(apikey, season_start)
+            rows = [r for r in rows if r['comp'] not in src]
+            cup_rows += rows
+            src.update({r['comp']: 'API-Football' for r in rows})
+        except Exception as e:
             log('Puchary z API-Football niedostępne:', e)
-    if 'UCL' not in cup_codes:
+    if 'UCL' not in src:
         snap = load_snapshot(season_start)
         if snap:
-            cup_rows = [r for r in cup_rows if r['comp'] != 'UCL'] + snap
-            cup_codes.add('UCL')
-            cup_source = (cup_source + ', ' if cup_source else '') + 'Sportradar (Liga Mistrzów, aktualizacja raz w tygodniu)'
+            cup_rows += snap
+            src['UCL'] = 'Sportradar'
+    by_src = {}
+    for c, label, *_ in CUPS:
+        if c in src:
+            by_src.setdefault(src[c], []).append(label)
+    cup_source = ', '.join(f'{s} ({", ".join(ls)})' for s, ls in by_src.items())
 
     # Drużyny: najpierw ligowe (wyznaczają grupę), potem pucharowe dopasowane po kluczu
     teams, order, bykey = {}, [], {}
+    NAMEK = {_key(k): v for k, v in NAME.items()}
 
     def team(raw, group, source):
-        name = (SNAPSHOT_NAME if source == 'snap' else NAME).get(raw, NAME.get(raw, raw))
+        name = (SNAPSHOT_NAME if source == 'snap' else NAME).get(raw) or NAME.get(raw) or NAMEK.get(_key(raw)) or raw
         k = key(name)
         if k in bykey:
             name = bykey[k]
@@ -307,7 +434,7 @@ def main():
     cups = [c for c, *_ in CUPS if c in present]
     groups = [[c, l] for c, l, _ in LEAGUES if c in present] + [['OTHER', 'Puchary – pozostałe kluby']]
     missing = [l for c, l, *_ in CUPS if c not in present]
-    note = 'Źródła: football-data.co.uk (ligi)' + (f', {cup_source} (puchary)' if cup_source else '') + '. xG tylko tam, gdzie źródło je podaje.'
+    note = 'Źródła: football-data.co.uk (ligi)' + (f', {cup_source}' if cup_source else '') + '. xG tylko dla lig.'
     if missing:
         note += ' Brak danych: ' + ', '.join(missing) + '.'
     data = {'teams': [[n, abbr[n], teams[n]] for n in order], 'matches': matches, 'comps': comps, 'cups': cups,

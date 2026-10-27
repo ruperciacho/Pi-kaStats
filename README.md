@@ -11,9 +11,10 @@ Wszystko działa za darmo na GitHubie, bez serwera:
 ## Źródła
 
 - Ligi: pliki CSV z [football-data.co.uk](https://www.football-data.co.uk/) (strzały, celne, rożne, faule, kartki, xG).
-- Puchary: [API-Football](https://www.api-football.com/) (Liga Mistrzów, Liga Europy, Liga Konferencji), jeśli jest klucz. Bez klucza strona używa zapisu fazy ligowej Ligi Mistrzów z 20.10.2026 (`data/ucl_snapshot.csv`).
+- Puchary (Liga Mistrzów, Liga Europy, Liga Konferencji): publiczne dane meczowe ESPN, bez klucza. To nieoficjalne API, więc może się kiedyś zmienić. Stan ostatniego pobrania jest w `data/cups_espn.json` (pole `_status`).
+- Rezerwa: [API-Football](https://www.api-football.com/) (jeśli jest klucz i płatny plan) oraz zapis Ligi Mistrzów z 20.10.2026 (`data/ucl_snapshot.csv`).
 
-## Klucz API-Football (opcjonalnie)
+## Klucz API-Football (opcjonalnie, tylko jako rezerwa)
 
 1. Załóż darmowe konto na dashboard.api-football.com i skopiuj klucz.
 2. W repo: **Settings → Secrets and variables → Actions → New repository secret**, nazwa `API_FOOTBALL_KEY`.

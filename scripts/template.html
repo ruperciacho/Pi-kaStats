@@ -295,7 +295,7 @@ function render(){
   if(!(S.rcomp in COMP)&&S.rcomp!=='TOP5')S.rcomp='TOP5';
   team?renderTeam():renderRank();
 }
-$('note').textContent=D.note+' Kartki to żółte i czerwone razem. Dane odświeżają się codziennie rano. Dotknij drużyny w rankingu, żeby zobaczyć jej mecze.';
+$('note').textContent=D.note+' Kartki to żółte i czerwone razem. Dane odświeżają się raz dziennie. Dotknij drużyny w rankingu, żeby zobaczyć jej mecze.';
 render();
 try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',render);}catch(e){}
 new MutationObserver(render).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
