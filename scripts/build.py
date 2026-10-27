@@ -106,14 +106,34 @@ def season_codes(today):
 
 def http_get(url, headers=None, tries=3):
     req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 (stats report)', **(headers or {})})
+    last = None
     for n in range(tries):
         try:
             with urllib.request.urlopen(req, timeout=60) as r:
                 return r.read()
-        except (urllib.error.URLError, TimeoutError) as e:
-            log('  błąd pobierania', url, e)
+        except urllib.error.HTTPError as e:
+            last = f'HTTP {e.code}'
+            log('  błąd pobierania', url, last)
+            if 400 <= e.code < 500 and e.code != 429:
+                break
             time.sleep(5 * (n + 1))
-    raise RuntimeError('nie udało się pobrać ' + url)
+        except (urllib.error.URLError, TimeoutError, OSError) as e:
+            last = repr(e)[:150]
+            log('  błąd pobierania', url, last)
+            time.sleep(5 * (n + 1))
+    raise RuntimeError(f'nie udało się pobrać {url} ({last})')
+
+
+def probe(urls):
+    """Diagnostyka: kod odpowiedzi i początek treści dla kilku adresów."""
+    out = {}
+    for u in urls:
+        try:
+            raw = http_get(u, tries=1)
+            out[u] = f'OK {len(raw)} B: ' + raw[:120].decode('utf-8', 'replace')
+        except Exception as e:
+            out[u] = str(e)[-80:]
+    return out
 
 
 def decode(raw):
@@ -329,6 +349,13 @@ def load_espn(season_start, codes):
             st['nowe'] += 1
         status[code] = st
         log(code, 'ESPN:', st)
+    if all(c in status and 'blad' in status[c] for c in codes):
+        status['_probe'] = probe([
+            ESPN + 'uefa.europa/scoreboard',
+            ESPN + 'uefa.europa/scoreboard?dates=20261023',
+            'https://site.web.api.espn.com/apis/site/v2/sports/soccer/uefa.europa/scoreboard?dates=20261023',
+            'https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard',
+        ])
     sc['_status'] = status
     sc['_aktualizacja'] = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')
     os.makedirs(DATA, exist_ok=True)
