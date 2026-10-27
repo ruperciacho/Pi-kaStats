@@ -1,0 +1,28 @@
+{
+"2026": {
+"_aktualizacja": "2026-10-27 11:22 UTC",
+"_status": {
+"UCL": {
+"bez_statystyk": 0,
+"blad": "scoreboard: nie udało się pobrać https://site.api.espn.com/apis/site/v2/sports/soccer/uefa.champions/scoreboard?dates=20260901-20261001&limit=500",
+"nowe": 0,
+"zakonczone": 0,
+"znalezione": 0
+},
+"UECL": {
+"bez_statystyk": 0,
+"blad": "scoreboard: nie udało się pobrać https://site.api.espn.com/apis/site/v2/sports/soccer/uefa.europa.conf/scoreboard?dates=20260901-20261001&limit=500",
+"nowe": 0,
+"zakonczone": 0,
+"znalezione": 0
+},
+"UEL": {
+"bez_statystyk": 0,
+"blad": "scoreboard: nie udało się pobrać https://site.api.espn.com/apis/site/v2/sports/soccer/uefa.europa/scoreboard?dates=20260901-20261001&limit=500",
+"nowe": 0,
+"zakonczone": 0,
+"znalezione": 0
+}
+}
+}
+}
