@@ -27,7 +27,10 @@ SHRINK_BY = {'goals': 15, 'shots': 10, 'sot': 12, 'corners': 12, 'fouls': 5, 'ca
 HALF_LIFE = 12      # po ilu meczach waga spada o połowę
 COMP_PRIOR = 25     # ściąganie średnich rozgrywek do średniej ogólnej
 MIN_GAMES = 4       # mniej meczów drużyny = "mało danych"
-TARGET_P = 0.65     # minimalna szansa dla proponowanej linii
+TARGET_P = 0.65     # minimalna szansa dla proponowanej linii (tryb "bezpieczne")
+# ile odchylenia od typowego meczu bierzemy na serio (korekta nadmiernej pewności, dobrane na 2025/26)
+LEAN_BY = {'goals': 0.7, 'shots': 0.9, 'sot': 0.7, 'corners': 0.75, 'fouls': 1.0, 'cards': 0.7}
+RISKY = (0.40, 0.60) # zakres szans w trybie "wyższe kursy" (wybierana linia najbliżej 50%)
 
 
 def _baselines(matches):
@@ -92,7 +95,9 @@ def expected(rt, bl, comp, home, away, key):
     bh, ba = base(bl, comp, key)
     ah, dh = rt.get(home, {}).get(key, (1.0, 1.0))
     aa, da = rt.get(away, {}).get(key, (1.0, 1.0))
-    return bh * ah * da, ba * aa * dh
+    eh, ea = bh * ah * da, ba * aa * dh
+    lean = LEAN_BY[key]
+    return bh + lean * (eh - bh), ba + lean * (ea - ba)
 
 
 def _pmf(mean, disp, kmax):
@@ -131,13 +136,26 @@ def pick(mean, typical, key, lines):
     return best
 
 
+def pick_risky(mean, typical, key, lines):
+    """Odważniejsza linia po tej samej stronie: szansa w zakresie RISKY, najbliżej 50%."""
+    disp = DISPERSION[key]
+    over = mean >= typical
+    best = None
+    for ln in lines:
+        p = p_over(mean, disp, ln)
+        p = p if over else 1 - p
+        if RISKY[0] <= p < RISKY[1] and (best is None or abs(p - 0.5) < abs(best[2] - 0.5)):
+            best = (('over' if over else 'under'), ln, p)
+    return best
+
+
 def predict(matches, fixtures):
     """fixtures: [(iso_utc, comp, home, away, extra)]. Zwraca listę prognoz."""
     rt, bl = ratings(matches)
     out = []
     for when, comp, home, away, extra in fixtures:
         nh, na = rt.get(home, {}).get('n', 0), rt.get(away, {}).get('n', 0)
-        row = {'t': when, 'c': comp, 'h': home, 'a': away, 'nh': nh, 'na': na, 'p': [], 'x': extra}
+        row = {'t': when, 'c': comp, 'h': home, 'a': away, 'nh': nh, 'na': na, 'p': [], 'r': [], 'x': extra}
         for key, label, _, _, lines in STATS:
             eh, ea = expected(rt, bl, comp, home, away, key)
             mean = eh + ea
@@ -145,19 +163,19 @@ def predict(matches, fixtures):
                 row['g25'] = round(p_over(mean, DISPERSION['goals'], 2.5), 3)
             bh, ba = base(bl, comp, key)
             typical = bh + ba
-            pk = pick(mean, typical, key, lines)
-            if not pk:
-                continue
-            side, ln, p = pk
-            p0 = p_over(typical, DISPERSION[key], ln)
-            p0 = p0 if side == 'over' else 1 - p0
-            hh = hit_history(matches, home, key, ln)
-            ha = hit_history(matches, away, key, ln)
-            if side == 'under':
-                hh, ha = (hh[1] - hh[0], hh[1]), (ha[1] - ha[0], ha[1])
-            row['p'].append({'k': key, 'm': round(mean, 1), 'eh': round(eh, 1), 'ea': round(ea, 1),
-                             's': side, 'l': ln, 'pr': round(p, 3), 'lift': round(p - p0, 3),
-                             'hh': list(hh), 'ha': list(ha)})
+            for bucket, pk in (('p', pick(mean, typical, key, lines)), ('r', pick_risky(mean, typical, key, lines))):
+                if not pk:
+                    continue
+                side, ln, p = pk
+                p0 = p_over(typical, DISPERSION[key], ln)
+                p0 = p0 if side == 'over' else 1 - p0
+                hh = hit_history(matches, home, key, ln)
+                ha = hit_history(matches, away, key, ln)
+                if side == 'under':
+                    hh, ha = (hh[1] - hh[0], hh[1]), (ha[1] - ha[0], ha[1])
+                row[bucket].append({'k': key, 'm': round(mean, 1), 'eh': round(eh, 1), 'ea': round(ea, 1),
+                                    's': side, 'l': ln, 'pr': round(p, 3), 'lift': round(p - p0, 3),
+                                    'hh': list(hh), 'ha': list(ha)})
         out.append(row)
     return out
 
@@ -176,7 +194,7 @@ def summary(res):
     return {'n': n, 'pred': round(sum(r[1] for r in res) / n, 3), 'real': round(sum(1 for r in res if r[2]) / n, 3)}
 
 
-def backtest(matches, min_games=MIN_GAMES):
+def backtest(matches, min_games=MIN_GAMES, risky=False):
     """Walk-forward: prognoza każdego meczu tylko z wcześniejszych danych. Zwraca listę (key, p, trafiony, lift)."""
     res = []
     dates = sorted({m[0] for m in matches})
@@ -195,7 +213,7 @@ def backtest(matches, min_games=MIN_GAMES):
                     continue
                 eh, ea = expected(rt, bl, m[1], m[2], m[3], key)
                 bh, ba = base(bl, m[1], key)
-                pk = pick(eh + ea, bh + ba, key, lines)
+                pk = (pick_risky if risky else pick)(eh + ea, bh + ba, key, lines)
                 if not pk:
                     continue
                 side, ln, p = pk

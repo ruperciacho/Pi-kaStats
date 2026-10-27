@@ -30,7 +30,8 @@ LEAGUES = [('E0', 'Premier League', 'PL'), ('SP1', 'La Liga', 'LL'), ('I1', 'Ser
            ('D1', 'Bundesliga', 'BL'), ('F1', 'Ligue 1', 'L1')]
 CUPS = [('UCL', 'Liga Mistrzów', 'LM', 2), ('UEL', 'Liga Europy', 'LE', 3), ('UECL', 'Liga Konferencji', 'LK', 848)]
 # test modelu prognoz na sezonie 2025/26 (top 5 lig, walk-forward, scripts/tips.py)
-PREV_CALIB = {'n': 9354, 'pred': 0.710, 'real': 0.705}
+PREV_CALIB = {'safe': {'n': 9354, 'pred': 0.709, 'real': 0.717},
+              'risky': {'n': 9217, 'pred': 0.502, 'real': 0.501}}
 ESPN_SLUG = {'UCL': 'uefa.champions', 'UEL': 'uefa.europa', 'UECL': 'uefa.europa.conf'}
 ESPN = 'https://site.api.espn.com/apis/site/v2/sports/soccer/'
 API = 'https://v3.football.api-sports.io'
@@ -553,8 +554,9 @@ def main():
             fx_at[k] = len(fx)
             fx.append((when, comp, rh, ra, extra))
         preds = TP.predict(hist, fx)
-        season_bt = TP.summary(TP.backtest(hist))
-        tips_data = {'fx': preds, 'calib': {'season': season_bt, 'prev': PREV_CALIB},
+        calib = {'safe': {'season': TP.summary(TP.backtest(hist)), 'prev': PREV_CALIB['safe']},
+                 'risky': {'season': TP.summary(TP.backtest(hist, risky=True)), 'prev': PREV_CALIB['risky']}}
+        tips_data = {'fx': preds, 'calib': calib,
                      'min_games': TP.MIN_GAMES, 'labels': {k: l for k, l, *_ in TP.STATS}}
     except Exception as e:  # prognozy nie mogą zablokować strony
         import traceback

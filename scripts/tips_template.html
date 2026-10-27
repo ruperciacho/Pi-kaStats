@@ -36,7 +36,7 @@ __STYLE__
     <div class="frow"><span class="flab">Dzień</span><div class="chips" id="day"></div></div>
     <div class="frow"><span class="flab">Rozgrywki</span><div class="chips" id="comp"></div></div>
     <div class="frow"><span class="flab">Zdarzenie</span><div class="chips" id="stat"></div></div>
-    <div class="frow"><span class="flab">Dane</span><div class="seg" id="data"></div></div>
+    <div class="frow"><span class="flab">Tryb</span><div class="seg" id="mode"></div></div>
   </section>
 
   <section class="panel">
@@ -70,18 +70,22 @@ const dayLabel=k=>{if(k===today)return 'Dziś';if(k===tomorrow)return 'Jutro';co
 const hm=ts=>new Date(ts).toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'});
 const now=Date.now();
 
-// Wszystkie zdarzenia: każdy typ z każdego nadchodzącego meczu (dziś + 3 dni)
+// Zdarzenia z nadchodzących meczów (dziś + 3 dni): tryb bezpieczny (f.p) i wyższe kursy (f.r)
 const FX=(TP&&TP.fx||[]).map(f=>({...f,ts:Date.parse(f.t)})).filter(f=>f.ts>now-5*60e3&&dayKey(f.ts)<=lastDay);
-const EV=[];
+const EVM={safe:[],risky:[]};
 FX.forEach(f=>{const low=f.nh<TP.min_games||f.na<TP.min_games;
-  f.p.forEach(p=>EV.push({f,p,low,day:dayKey(f.ts),id:f.t+'|'+T[f.h][0]+'|'+T[f.a][0]+'|'+p.k,
-    mid:f.t+'|'+f.h+'|'+f.a,match:T[f.h][0]+' – '+T[f.a][0],txt:TP.labels[p.k]+' '+SIDE[p.s]+' '+dec(p.l,1)}));});
-EV.sort((a,b)=>b.p.pr-a.p.pr||b.p.lift-a.p.lift||a.f.ts-b.f.ts);
+  [['safe',f.p||[]],['risky',f.r||[]]].forEach(([mode,ps])=>ps.forEach(p=>EVM[mode].push({f,p,low,mode,day:dayKey(f.ts),
+    id:f.t+'|'+T[f.h][0]+'|'+T[f.a][0]+'|'+p.k+'|'+p.s+'|'+p.l,
+    mid:f.t+'|'+f.h+'|'+f.a,match:T[f.h][0]+' – '+T[f.a][0],txt:TP.labels[p.k]+' '+SIDE[p.s]+' '+dec(p.l,1)})));});
+EVM.safe.sort((a,b)=>b.p.pr-a.p.pr||b.p.lift-a.p.lift||a.f.ts-b.f.ts);
+EVM.risky.sort((a,b)=>b.p.pr-a.p.pr||b.p.lift-a.p.lift||a.f.ts-b.f.ts);
+const ALL=EVM.safe.concat(EVM.risky);
 
-let S={day:'all',comp:'all',stat:'all',data:'sure'};
+let S={day:'all',comp:'all',stat:'all',mode:'safe'};
 try{const s=JSON.parse(localStorage.getItem('t5-tips')||'null');if(s)for(const k in S)if(typeof s[k]==='string')S[k]=s[k];}catch(e){}
 let SLIP=[];try{SLIP=JSON.parse(localStorage.getItem('t5-slip')||'[]');}catch(e){}
-const live=new Set(EV.map(e=>e.id));SLIP=Array.isArray(SLIP)?SLIP.filter(x=>x&&live.has(x.id)):[];
+if(!(S.mode in EVM))S.mode='safe';
+const live=new Set(ALL.map(e=>e.id));SLIP=Array.isArray(SLIP)?SLIP.filter(x=>x&&live.has(x.id)):[];
 const save=()=>{try{localStorage.setItem('t5-tips',JSON.stringify(S));localStorage.setItem('t5-slip',JSON.stringify(SLIP));}catch(e){}};
 let shown=40;
 
@@ -109,6 +113,7 @@ function renderSlip(open){const el=$('slip'),bar=$('mybar');
 }
 
 function render(){
+  const EV=EVM[S.mode];
   const days=[...new Set(EV.map(e=>e.day))].sort();
   if(S.day!=='all'&&!days.includes(S.day))S.day='all';
   chips($('day'),[{k:'all',l:'Wszystkie'}].concat(days.map(k=>({k,l:dayLabel(k)}))),'day');
@@ -116,11 +121,13 @@ function render(){
   if(S.comp!=='all'&&!comps.includes(S.comp))S.comp='all';
   chips($('comp'),[{k:'all',l:'Wszystkie'}].concat(comps.map(c=>({k:c,l:COMP[c][0]}))),'comp');
   chips($('stat'),[{k:'all',l:'Wszystkie'}].concat(Object.keys(TP?TP.labels:{}).map(k=>({k,l:TP.labels[k]}))),'stat');
-  chips($('data'),[{k:'sure',l:'Pewne dane'},{k:'all',l:'Wszystkie'}],'data');
-  const list=EV.filter(e=>(S.day==='all'||e.day===S.day)&&(S.comp==='all'||e.f.c===S.comp)&&(S.stat==='all'||e.p.k===S.stat)&&(S.data==='all'||!e.low));
-  const hidden=S.data==='sure'?EV.filter(e=>e.low&&(S.day==='all'||e.day===S.day)&&(S.comp==='all'||e.f.c===S.comp)&&(S.stat==='all'||e.p.k===S.stat)).length:0;
+  chips($('mode'),[{k:'safe',l:'Bezpieczne'},{k:'risky',l:'Wyższe kursy'}],'mode');
+  const list=EV.filter(e=>(S.day==='all'||e.day===S.day)&&(S.comp==='all'||e.f.c===S.comp)&&(S.stat==='all'||e.p.k===S.stat));
   const nm=new Set(list.map(e=>e.mid)).size;
-  $('meta').textContent=list.length+' zdarzeń z '+nm+(nm===1?' meczu':' meczów')+(hidden?'. Ukryte z powodu małej ilości danych: '+hidden+'.':'.')+' Dotknij zdarzenia, żeby dodać je do kuponu.';
+  $('meta').textContent=(S.mode==='safe'?'Szansa co najmniej 65%, kurs min ok. 1,2–1,5. ':'Szansa ok. 40–60%, kurs min ok. 1,7–2,5. Kurs ok. 4–5 złożysz z 2–3 takich zdarzeń z różnych meczów. ')+
+    list.length+' zdarzeń z '+nm+(nm===1?' meczu':' meczów')+'. Dotknij zdarzenia, żeby dodać je do kuponu.';
+  $('facts').innerHTML='<span><b>'+new Set(EV.map(e=>e.mid)).size+'</b>meczów</span><span><b>'+EV.length+'</b>zdarzeń</span><span><b>4</b>dni: dziś + 3</span>';
+  writeNote();
   const sel=new Set(SLIP.map(x=>x.id)),ol=$('list');ol.innerHTML='';
   list.slice(0,shown).forEach(e=>{const li=document.createElement('li'),b=document.createElement('button');b.type='button';b.className='ev';
     b.setAttribute('aria-pressed',String(sel.has(e.id)));
@@ -138,13 +145,14 @@ function render(){
 }
 $('more').addEventListener('click',()=>{shown+=40;render();});
 
-const nMatch=new Set(EV.map(e=>e.mid)).size;
-$('facts').innerHTML='<span><b>'+nMatch+'</b>meczów</span><span><b>'+EV.length+'</b>zdarzeń</span><span><b>4</b>dni: dziś + 3</span>';
-const c=(TP&&TP.calib)||{},cs=c.season,cp=c.prev;
-$('note').textContent='Każde zdarzenie to linia, którą model uznał za co najmniej 65% prawdopodobną, po stronie, w którą przechyla się ten mecz. '+
-  '„Prognoza” to oczekiwana suma w meczu, „hist.” to ile ostatnich meczów obu drużyn spełniło to zdarzenie, a „kurs min” to kurs, od którego zakład przestaje być stratny na dłuższą metę. '+
-  (cp?'Test na sezonie 2025/26: zdarzenia szacowane średnio na '+pct1(cp.pred)+' weszły w '+pct1(cp.real)+' ('+cp.n.toLocaleString('pl-PL')+'). ':'')+
-  (cs?'W tym sezonie: '+pct1(cs.pred)+' szacowane, '+pct1(cs.real)+' weszło ('+cs.n.toLocaleString('pl-PL')+'). ':'')+
-  'Model podaje uczciwe szanse, ale nie ogrywa bukmachera, a łączna szansa kuponu zakłada niezależne zdarzenia. 18+, graj odpowiedzialnie. Źródła: football-data.co.uk, ESPN.';
+function writeNote(){
+  const c=((TP&&TP.calib)||{})[S.mode]||{},cs=c.season,cp=c.prev;
+  $('note').textContent=(S.mode==='safe'?'Bezpieczne: linia najbliżej prognozy, którą model uznał za co najmniej 65% prawdopodobną, po stronie, w którą przechyla się mecz. ':
+    'Wyższe kursy: odważniejsza linia po tej samej stronie, z szansą najbliżej 50% (zakres 40–60%). ')+
+    '„Prognoza” to oczekiwana suma w meczu, „hist.” to ile ostatnich meczów obu drużyn spełniło to zdarzenie, a „kurs min” = 1 / szansa, czyli kurs, od którego zakład przestaje być stratny na dłuższą metę. '+
+    (cp?'Test na sezonie 2025/26: szacowane średnio '+pct1(cp.pred)+', weszło '+pct1(cp.real)+' ('+cp.n.toLocaleString('pl-PL')+' zdarzeń). ':'')+
+    (cs?'W tym sezonie: '+pct1(cs.pred)+' szacowane, '+pct1(cs.real)+' weszło ('+cs.n.toLocaleString('pl-PL')+'). ':'')+
+    'Model podaje uczciwe szanse, ale nie ogrywa bukmachera, a łączna szansa kuponu zakłada niezależne zdarzenia. 18+, graj odpowiedzialnie. Źródła: football-data.co.uk, ESPN.';
+}
 render();
 </script>
