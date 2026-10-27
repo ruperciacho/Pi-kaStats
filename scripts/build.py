@@ -277,18 +277,29 @@ def load_espn(season_start, codes):
     end = min(datetime.now(timezone.utc).date(), date(season_start + 1, 6, 30))
     for code in codes:
         base = ESPN + ESPN_SLUG[code]
-        st = {'znalezione': 0, 'zakonczone': 0, 'nowe': 0, 'bez_statystyk': 0}
-        try:
-            events, d = [], start
-            while d <= end:
-                d2 = min(end, d + timedelta(days=30))
-                js = json.loads(http_get(f'{base}/scoreboard?dates={d:%Y%m%d}-{d2:%Y%m%d}&limit=500'))
-                events += js.get('events') or []
-                d = d2 + timedelta(days=1)
-        except Exception as e:
-            st['blad'] = 'scoreboard: ' + str(e)[:200]
+        st = {'znalezione': 0, 'zakonczone': 0, 'nowe': 0, 'bez_statystyk': 0, 'dni_sprawdzone': 0}
+        days_done = set(sc.setdefault('_dni', {}).get(code, []))
+        events, day_of, d, errors = [], {}, start, 0
+        while d <= end:   # ESPN przyjmuje tylko pojedyncze daty
+            ds = f'{d:%Y%m%d}'
+            d += timedelta(days=1)
+            if ds in days_done:
+                continue
+            try:
+                js = json.loads(http_get(f'{base}/scoreboard?dates={ds}', tries=2))
+            except Exception as e:
+                errors += 1
+                st['blad'] = 'scoreboard: ' + str(e)[:200]
+                continue
+            st['dni_sprawdzone'] += 1
+            for ev in js.get('events') or []:
+                events.append(ev)
+                day_of[str(ev.get('id'))] = ds
+            day_of.setdefault('_' + ds, ds)
+            time.sleep(0.15)
+        if errors and not events:
             status[code] = st
-            log(code, 'ESPN niedostępne:', e)
+            log(code, 'ESPN niedostępne:', st.get('blad'))
             continue
         seen = set()
         for ev in events:
@@ -347,14 +358,18 @@ def load_espn(season_start, codes):
                        'v': [_int(home.get('score')) or 0, _int(away.get('score')) or 0,
                              hv[0], av[0], hv[1], av[1], hv[2], av[2], hv[3], av[3], hv[4], av[4], None, None]}
             st['nowe'] += 1
+        # dzień uznajemy za zamknięty, gdy minęły 2 dni i wszystkie jego mecze są zapisane
+        pending = {day_of[str(ev.get('id'))] for ev in events if str(ev.get('id')) not in sc}
+        cutoff = f'{end - timedelta(days=2):%Y%m%d}'
+        checked = {v for k, v in day_of.items()}
+        days_done |= {ds for ds in checked if ds <= cutoff and ds not in pending}
+        sc['_dni'][code] = sorted(days_done)
         status[code] = st
         log(code, 'ESPN:', st)
     if all(c in status and 'blad' in status[c] for c in codes):
         status['_probe'] = probe([
             ESPN + 'uefa.europa/scoreboard',
-            ESPN + 'uefa.europa/scoreboard?dates=20261023',
-            'https://site.web.api.espn.com/apis/site/v2/sports/soccer/uefa.europa/scoreboard?dates=20261023',
-            'https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard',
+            ESPN + 'uefa.europa/scoreboard?dates=20261022',
         ])
     sc['_status'] = status
     sc['_aktualizacja'] = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')
