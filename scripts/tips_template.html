@@ -1,0 +1,150 @@
+<title>Typy na najbliższe dni</title>
+__HEAD__
+<style>
+__STYLE__
+/* Strona typów: jedna kolumna, filtry, lista zdarzeń od najbardziej prawdopodobnych, kupon u dołu */
+.evl{list-style:none;margin:0;padding:0}
+.evl li{border-top:1px solid var(--line)}
+.evl li:first-child{border-top:0}
+.ev{all:unset;box-sizing:border-box;width:100%;cursor:pointer;display:grid;grid-template-columns:52px minmax(0,1fr) 54px;gap:10px;align-items:center;padding:10px 4px;border-radius:8px}
+.ev:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.ev[aria-pressed="true"]{background:var(--accent-soft)}
+.evp{font-family:var(--display);font-weight:600;font-size:24px;text-align:right;font-variant-numeric:tabular-nums}
+.evp.hi{color:var(--win)}
+.evt{min-width:0;display:flex;flex-direction:column;gap:1px}
+.evn{font-weight:600}
+.evm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.evm{color:var(--ink)}
+.evx{font-size:13px;line-height:1.4;color:var(--muted);font-variant-numeric:tabular-nums}
+.evo{text-align:right;font-family:var(--display);font-weight:600;font-size:18px;font-variant-numeric:tabular-nums;line-height:1.1}
+.evo small{display:block;font-family:var(--body);font-weight:400;font-size:11px;color:var(--muted)}
+.ev[aria-pressed="true"] .evo::after{content:"✓";display:block;font-size:14px;color:var(--accent)}
+.more{margin:8px auto 4px;display:block}
+.slip .x{all:unset;cursor:pointer;color:var(--muted);font-size:18px;padding:0 4px}
+.slip .x:focus-visible{outline:2px solid var(--accent)}
+</style>
+
+<main class="wrap">
+  <header>
+    <p class="eyebrow">Typy · stan na __ASOF__</p>
+    <h1>Typy na najbliższe dni</h1>
+    <p class="facts" id="facts"></p>
+    <p class="nav"><a class="navlink" href="./">← Statystyki drużyn</a></p>
+  </header>
+
+  <section class="filters" aria-label="Filtry">
+    <div class="frow"><span class="flab">Dzień</span><div class="chips" id="day"></div></div>
+    <div class="frow"><span class="flab">Rozgrywki</span><div class="chips" id="comp"></div></div>
+    <div class="frow"><span class="flab">Zdarzenie</span><div class="chips" id="stat"></div></div>
+    <div class="frow"><span class="flab">Dane</span><div class="seg" id="data"></div></div>
+  </section>
+
+  <section class="panel">
+    <div class="ph"><h2>Od najbardziej prawdopodobnych</h2></div>
+    <p class="rank-meta" id="meta"></p>
+    <ol class="evl" id="list"></ol>
+    <p class="empty" id="empty" hidden>Brak zdarzeń dla tych filtrów.</p>
+    <button type="button" class="btn more" id="more" hidden>Pokaż więcej</button>
+  </section>
+
+  <section class="panel slip" id="slip" hidden aria-label="Twój kupon"></section>
+
+  <p class="note" id="note"></p>
+  <div class="mybar" id="mybar" hidden></div>
+</main>
+
+<script>
+const D=__DATA__;
+const T=D.teams, COMP=D.comps, CUPS=new Set(D.cups), TP=D.tips;
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const pct=p=>Math.round(p*100)+'%';
+const pct1=p=>(p*100).toLocaleString('pl-PL',{minimumFractionDigits:1,maximumFractionDigits:1})+'%';
+const dec=(v,n)=>v.toLocaleString('pl-PL',{minimumFractionDigits:n,maximumFractionDigits:n});
+const odds=p=>dec(1/Math.max(p,0.001),2);
+const SIDE={over:'powyżej',under:'poniżej'};
+const dayKey=ts=>{const d=new Date(ts);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
+const today=dayKey(Date.now()),tomorrow=dayKey(Date.now()+864e5),lastDay=dayKey(Date.now()+3*864e5);
+const dayLabel=k=>{if(k===today)return 'Dziś';if(k===tomorrow)return 'Jutro';const d=new Date(k+'T12:00:00');
+  return d.toLocaleDateString('pl-PL',{weekday:'short'})+' '+k.slice(8,10)+'.'+k.slice(5,7);};
+const hm=ts=>new Date(ts).toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'});
+const now=Date.now();
+
+// Wszystkie zdarzenia: każdy typ z każdego nadchodzącego meczu (dziś + 3 dni)
+const FX=(TP&&TP.fx||[]).map(f=>({...f,ts:Date.parse(f.t)})).filter(f=>f.ts>now-5*60e3&&dayKey(f.ts)<=lastDay);
+const EV=[];
+FX.forEach(f=>{const low=f.nh<TP.min_games||f.na<TP.min_games;
+  f.p.forEach(p=>EV.push({f,p,low,day:dayKey(f.ts),id:f.t+'|'+T[f.h][0]+'|'+T[f.a][0]+'|'+p.k,
+    mid:f.t+'|'+f.h+'|'+f.a,match:T[f.h][0]+' – '+T[f.a][0],txt:TP.labels[p.k]+' '+SIDE[p.s]+' '+dec(p.l,1)}));});
+EV.sort((a,b)=>b.p.pr-a.p.pr||b.p.lift-a.p.lift||a.f.ts-b.f.ts);
+
+let S={day:'all',comp:'all',stat:'all',data:'sure'};
+try{const s=JSON.parse(localStorage.getItem('t5-tips')||'null');if(s)for(const k in S)if(typeof s[k]==='string')S[k]=s[k];}catch(e){}
+let SLIP=[];try{SLIP=JSON.parse(localStorage.getItem('t5-slip')||'[]');}catch(e){}
+const live=new Set(EV.map(e=>e.id));SLIP=Array.isArray(SLIP)?SLIP.filter(x=>x&&live.has(x.id)):[];
+const save=()=>{try{localStorage.setItem('t5-tips',JSON.stringify(S));localStorage.setItem('t5-slip',JSON.stringify(SLIP));}catch(e){}};
+let shown=40;
+
+function chips(el,items,key,isSeg){el.innerHTML='';items.forEach(it=>{const b=document.createElement('button');b.type='button';b.id=el.id+'-'+it.k;
+  b.textContent=it.l;b.dataset.k=it.k;b.setAttribute('aria-pressed',String(S[key]===it.k));
+  b.addEventListener('click',()=>{S[key]=it.k;shown=40;save();render();});el.appendChild(b);});}
+
+function toggle(e){const at=SLIP.findIndex(x=>x.id===e.id);
+  if(at>=0)SLIP.splice(at,1);else{SLIP=SLIP.filter(x=>!(x.mid===e.mid&&x.k===e.p.k));SLIP.push({id:e.id,mid:e.mid,k:e.p.k,m:e.match,txt:e.txt,p:e.p.pr});}
+  save();render();}
+
+function renderSlip(open){const el=$('slip'),bar=$('mybar');
+  if(!SLIP.length){el.hidden=true;bar.hidden=true;return;}
+  const tot=SLIP.reduce((a,x)=>a*x.p,1),dup=new Set(SLIP.map(x=>x.mid)).size<SLIP.length;
+  const n=SLIP.length,word=n===1?'typ':n<5?'typy':'typów';
+  bar.hidden=false;
+  bar.innerHTML='<span>Twój kupon: '+n+' '+word+' · szansa <b>'+pct(tot)+'</b> · kurs min <b>'+odds(tot)+'</b></span><span class="acts"><button type="button" class="btn" id="showSlip">Pokaż</button><button type="button" class="btn" id="clrSlip">Wyczyść</button></span>';
+  $('clrSlip').addEventListener('click',()=>{SLIP=[];save();render();});
+  $('showSlip').addEventListener('click',()=>{renderSlip(true);$('slip').scrollIntoView({behavior:'smooth',block:'start'});});
+  if(open||!el.hidden){el.hidden=false;
+    el.innerHTML='<div class="ph"><h2>Twój kupon</h2></div>'+SLIP.map((x,i)=>'<div class="row"><div style="min-width:0"><p class="mn">'+esc(x.txt)+'</p><p class="mv">'+esc(x.m)+'</p></div><span><span class="pp">'+pct(x.p)+'</span><button type="button" class="x" data-i="'+i+'" aria-label="Usuń '+esc(x.txt)+'">×</button></span></div>').join('')+
+      '<div class="slip-sum"><span>Łączna szansa <b>'+pct(tot)+'</b> · kurs min <b>'+odds(tot)+'</b></span></div>'+
+      (dup?'<p class="mv">Kilka typów z jednego meczu: ich szanse mogą być powiązane, więc łączna szansa jest tylko przybliżeniem.</p>':'');
+    el.querySelectorAll('.x').forEach(b=>b.addEventListener('click',()=>{SLIP.splice(Number(b.dataset.i),1);save();render();}));}
+}
+
+function render(){
+  const days=[...new Set(EV.map(e=>e.day))].sort();
+  if(S.day!=='all'&&!days.includes(S.day))S.day='all';
+  chips($('day'),[{k:'all',l:'Wszystkie'}].concat(days.map(k=>({k,l:dayLabel(k)}))),'day');
+  const comps=Object.keys(COMP).filter(c=>EV.some(e=>e.f.c===c));
+  if(S.comp!=='all'&&!comps.includes(S.comp))S.comp='all';
+  chips($('comp'),[{k:'all',l:'Wszystkie'}].concat(comps.map(c=>({k:c,l:COMP[c][0]}))),'comp');
+  chips($('stat'),[{k:'all',l:'Wszystkie'}].concat(Object.keys(TP?TP.labels:{}).map(k=>({k,l:TP.labels[k]}))),'stat');
+  chips($('data'),[{k:'sure',l:'Pewne dane'},{k:'all',l:'Wszystkie'}],'data');
+  const list=EV.filter(e=>(S.day==='all'||e.day===S.day)&&(S.comp==='all'||e.f.c===S.comp)&&(S.stat==='all'||e.p.k===S.stat)&&(S.data==='all'||!e.low));
+  const hidden=S.data==='sure'?EV.filter(e=>e.low&&(S.day==='all'||e.day===S.day)&&(S.comp==='all'||e.f.c===S.comp)&&(S.stat==='all'||e.p.k===S.stat)).length:0;
+  const nm=new Set(list.map(e=>e.mid)).size;
+  $('meta').textContent=list.length+' zdarzeń z '+nm+(nm===1?' meczu':' meczów')+(hidden?'. Ukryte z powodu małej ilości danych: '+hidden+'.':'.')+' Dotknij zdarzenia, żeby dodać je do kuponu.';
+  const sel=new Set(SLIP.map(x=>x.id)),ol=$('list');ol.innerHTML='';
+  list.slice(0,shown).forEach(e=>{const li=document.createElement('li'),b=document.createElement('button');b.type='button';b.className='ev';
+    b.setAttribute('aria-pressed',String(sel.has(e.id)));
+    const f=e.f,p=e.p,cup=CUPS.has(f.c),hist=(p.hh[0]+p.ha[0])+'/'+(p.hh[1]+p.ha[1]);
+    b.innerHTML='<span class="evp'+(p.pr>=0.75?' hi':'')+'">'+pct(p.pr)+'</span>'+
+      '<span class="evt"><span class="evn">'+esc(e.txt)+'</span><span class="evm">'+esc(e.match)+'</span>'+
+      '<span class="evx"><span class="tag '+(cup?'u':'l')+'">'+esc(COMP[f.c]?COMP[f.c][1]:f.c)+'</span>'+dayLabel(e.day)+' '+hm(f.ts)+' · prognoza '+dec(p.m,1)+' · hist. '+hist+(e.low?' · mało danych':'')+'</span></span>'+
+      '<span class="evo"><small>kurs min</small>'+odds(p.pr)+'</span>';
+    b.setAttribute('aria-label',pct(p.pr)+': '+e.txt+', '+e.match+', '+dayLabel(e.day)+' '+hm(f.ts)+'. Kurs minimalny '+odds(p.pr)+'. '+(sel.has(e.id)?'Usuń z kuponu':'Dodaj do kuponu'));
+    b.addEventListener('click',()=>toggle(e));li.appendChild(b);ol.appendChild(li);});
+  $('empty').hidden=list.length>0;
+  $('empty').textContent=TP?'Brak zdarzeń dla tych filtrów.':'Prognozy chwilowo niedostępne. Spróbuj po najbliższej aktualizacji.';
+  $('more').hidden=list.length<=shown;
+  renderSlip(false);
+}
+$('more').addEventListener('click',()=>{shown+=40;render();});
+
+const nMatch=new Set(EV.map(e=>e.mid)).size;
+$('facts').innerHTML='<span><b>'+nMatch+'</b>meczów</span><span><b>'+EV.length+'</b>zdarzeń</span><span><b>4</b>dni: dziś + 3</span>';
+const c=(TP&&TP.calib)||{},cs=c.season,cp=c.prev;
+$('note').textContent='Każde zdarzenie to linia, którą model uznał za co najmniej 65% prawdopodobną, po stronie, w którą przechyla się ten mecz. '+
+  '„Prognoza” to oczekiwana suma w meczu, „hist.” to ile ostatnich meczów obu drużyn spełniło to zdarzenie, a „kurs min” to kurs, od którego zakład przestaje być stratny na dłuższą metę. '+
+  (cp?'Test na sezonie 2025/26: zdarzenia szacowane średnio na '+pct1(cp.pred)+' weszły w '+pct1(cp.real)+' ('+cp.n.toLocaleString('pl-PL')+'). ':'')+
+  (cs?'W tym sezonie: '+pct1(cs.pred)+' szacowane, '+pct1(cs.real)+' weszło ('+cs.n.toLocaleString('pl-PL')+'). ':'')+
+  'Model podaje uczciwe szanse, ale nie ogrywa bukmachera, a łączna szansa kuponu zakłada niezależne zdarzenia. 18+, graj odpowiedzialnie. Źródła: football-data.co.uk, ESPN.';
+render();
+</script>

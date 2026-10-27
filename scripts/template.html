@@ -93,6 +93,41 @@ h2{font-family:var(--display);font-weight:600;font-size:22px;line-height:1.2;mar
 .empty{margin:8px 4px 12px;color:var(--ink-2)}
 .note{font-size:13px;color:var(--muted);margin:0}
 .rank-meta{font-size:13px;color:var(--muted);margin:0 4px 6px}
+.nav{margin:12px 0 0}
+.navlink{display:inline-block;font:500 15px var(--body);color:var(--accent);border:1px solid var(--accent);border-radius:999px;padding:7px 14px;text-decoration:none}
+.navlink:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.tbar{display:flex;flex-direction:column;gap:10px}
+.slip{display:flex;flex-direction:column;gap:8px}
+.slip .row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;align-items:baseline;padding:8px 0;border-top:1px solid var(--line)}
+.slip .row:first-of-type{border-top:0}
+.slip .mn,.slip .mv{margin:0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.slip .pp{font-family:var(--display);font-weight:600;font-size:20px;font-variant-numeric:tabular-nums;text-align:right}
+.slip-sum{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;padding-top:10px;border-top:1px solid var(--line)}
+.slip-sum b{font-family:var(--display);font-weight:600;font-size:22px;font-variant-numeric:tabular-nums}
+.btn{font:500 14px var(--body);color:var(--accent);background:transparent;border:1px solid var(--accent);border-radius:999px;padding:6px 14px;cursor:pointer}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.fxl{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+.fx{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px}
+.fxh{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.fxn{font-family:var(--display);font-weight:600;font-size:21px;line-height:1.2;margin:4px 0 10px;text-wrap:balance}
+.badge{font-size:11px;font-weight:600;letter-spacing:.04em;padding:1px 6px;border-radius:4px;background:var(--draw-bg);color:var(--draw)}
+.picks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.pk{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;gap:2px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);min-width:0}
+.pk:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.pk[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.pk-top{display:flex;justify-content:space-between;align-items:baseline;gap:6px;font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-2)}
+.pk-p{font-family:var(--display);font-size:20px;letter-spacing:0;text-transform:none;color:var(--ink);font-variant-numeric:tabular-nums}
+.pk-p.hi{color:var(--win)}
+.pk-line{font-family:var(--display);font-weight:600;font-size:19px;color:var(--ink)}
+.pk-sub{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pk-mk{font-size:12px;color:var(--win)}
+.pk-mk.no{color:var(--muted)}
+.mkrow{margin:-4px 0 10px;font-size:13px;color:var(--ink-2)}
+.mkrow b{font-variant-numeric:tabular-nums;color:var(--ink)}
+.mkrow .val{color:var(--win);font-weight:600}
+.mybar{position:sticky;bottom:0;margin-top:4px;background:var(--surface);border:1px solid var(--accent);border-radius:12px;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 12px;font-size:14px;color:var(--ink-2)}
+.mybar b{font-family:var(--display);font-weight:600;font-size:20px;color:var(--ink);font-variant-numeric:tabular-nums}
+.mybar .acts{display:flex;gap:8px}
 @media (max-width:370px){.kv{font-size:26px}h1{font-size:34px}.frow{grid-template-columns:1fr;gap:6px}}
 @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
 </style>
@@ -102,6 +137,7 @@ h2{font-family:var(--display);font-weight:600;font-size:22px;line-height:1.2;mar
     <p class="eyebrow">Sezon 2026/27 · stan na __ASOF__</p>
     <h1>Statystyki drużyn</h1>
     <p class="facts" id="facts"></p>
+    <p class="nav"><a class="navlink" href="typy.html">Typy na dziś i 3 dni naprzód →</a></p>
   </header>
 
   <div class="seg big" id="tabs" aria-label="Widok">
@@ -109,7 +145,7 @@ h2{font-family:var(--display);font-weight:600;font-size:22px;line-height:1.2;mar
     <button type="button" id="tab-rank" data-v="rank" aria-pressed="false">Ranking</button>
   </div>
 
-  <section class="filters" aria-label="Filtry">
+  <section class="filters" id="filters" aria-label="Filtry">
     <div class="frow" id="row-team"><span class="flab">Drużyna</span><select id="team" aria-label="Drużyna"></select></div>
     <div class="frow" id="row-tcomp"><span class="flab">Rozgrywki</span><div class="chips" id="tcomp"></div></div>
     <div class="frow" id="row-rcomp" hidden><span class="flab">Rozgrywki</span><div class="chips" id="rcomp"></div></div>
@@ -173,6 +209,7 @@ const defTeam=Math.max(0,T.findIndex(t=>t[0]==='Real Madryt'));
 let S={view:'team',team:defTeam,tcomp:'all',rcomp:'TOP5',stat:'shots',persp:'team',range:'5',venue:'all',sort:'desc'};
 try{const s=JSON.parse(localStorage.getItem('t5-state')||'null');if(s&&typeof s==='object'){for(const k in S)if(k in s)S[k]=s[k];}}catch(e){}
 if(!(S.team>=0&&S.team<T.length))S.team=defTeam;
+if(!['team','rank'].includes(S.view))S.view='team';
 const save=()=>{try{localStorage.setItem('t5-state',JSON.stringify(S));}catch(e){}};
 
 const byTeam=T.map(()=>[]);

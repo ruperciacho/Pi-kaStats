@@ -8,6 +8,10 @@ Wszystko działa za darmo na GitHubie, bez serwera:
 - **GitHub Pages** serwuje stronę z gałęzi `gh-pages`.
 - W razie potrzeby akcję można też uruchomić ręcznie: **Actions → Aktualizacja danych → Run workflow**.
 
+## Typy (typy.html)
+
+Osobna strona z prognozami na dziś i 3 kolejne dni: zdarzenia (bramki, strzały, celne, rożne, faule, kartki) ułożone od najbardziej prawdopodobnych, z kursem minimalnym i możliwością złożenia własnego kuponu. Model jest w `scripts/tips.py`. Na sezonie 2025/26 (walk-forward, 9354 typy) szacował średnio 71,0%, a weszło 70,5%. Podaje uczciwe szanse, ale nie ogrywa bukmachera.
+
 ## Źródła
 
 - Ligi: pliki CSV z [football-data.co.uk](https://www.football-data.co.uk/) (strzały, celne, rożne, faule, kartki, xG).

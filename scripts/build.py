@@ -18,6 +18,7 @@ import sys
 import time
 import unicodedata
 import urllib.error
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import urllib.request
 from datetime import datetime, timezone, timedelta
 
@@ -28,6 +29,8 @@ SITE = os.path.join(ROOT, 'site')
 LEAGUES = [('E0', 'Premier League', 'PL'), ('SP1', 'La Liga', 'LL'), ('I1', 'Serie A', 'SA'),
            ('D1', 'Bundesliga', 'BL'), ('F1', 'Ligue 1', 'L1')]
 CUPS = [('UCL', 'Liga Mistrzów', 'LM', 2), ('UEL', 'Liga Europy', 'LE', 3), ('UECL', 'Liga Konferencji', 'LK', 848)]
+# test modelu prognoz na sezonie 2025/26 (top 5 lig, walk-forward, scripts/tips.py)
+PREV_CALIB = {'n': 9354, 'pred': 0.710, 'real': 0.705}
 ESPN_SLUG = {'UCL': 'uefa.champions', 'UEL': 'uefa.europa', 'UECL': 'uefa.europa.conf'}
 ESPN = 'https://site.api.espn.com/apis/site/v2/sports/soccer/'
 API = 'https://v3.football.api-sports.io'
@@ -62,6 +65,7 @@ NAME = {
     'Olympique de Marseille': 'Olympique Marsylia', 'Stade Brestois': 'Brest', 'RC Strasbourg Alsace': 'Strasbourg',
     'LOSC Lille': 'Lille', 'Lille OSC': 'Lille', 'AS Monaco': 'Monaco', 'TSG Hoffenheim': 'Hoffenheim',
     '1. FSV Mainz 05': 'Mainz 05', 'Mainz 05': 'Mainz 05', 'AFC Bournemouth': 'Bournemouth', 'Leeds United': 'Leeds United',
+    'SC Paderborn 07': 'SC Paderborn', 'FC Schalke 04': 'Schalke 04', 'Hamburg SV': 'Hamburger SV',
     'Deportivo Alavés': 'Alavés', 'Celta de Vigo': 'Celta Vigo', 'RCD Espanyol': 'Espanyol', 'Real Oviedo': 'Oviedo',
 }
 SNAPSHOT_NAME = {'Real Madrid': 'Real Madryt'}
@@ -379,6 +383,77 @@ def load_espn(season_start, codes):
     return rows, {r['comp'] for r in rows}
 
 
+ESPN_LEAGUE = {'E0': 'eng.1', 'SP1': 'esp.1', 'I1': 'ita.1', 'D1': 'ger.1', 'F1': 'fra.1'}
+
+
+def load_fixtures(now, horizon=3):
+    """Nadchodzące mecze z dziś i `horizon` kolejnych dni (czas polski):
+    ligi z football-data.co.uk/fixtures.csv (z kursami) i z ESPN, puchary z ESPN."""
+    try:
+        from zoneinfo import ZoneInfo
+        uk, pl = ZoneInfo('Europe/London'), ZoneInfo('Europe/Warsaw')
+    except Exception:
+        uk = pl = timezone.utc
+    start_pl = now.astimezone(pl).replace(hour=0, minute=0, second=0, microsecond=0)
+    lo, hi = now - timedelta(hours=2), (start_pl + timedelta(days=horizon + 1)).astimezone(timezone.utc)
+    out, seen = [], set()
+
+    def add(when, comp, home, away, extra):
+        k = (when[:10], comp, home, away)
+        if k not in seen:
+            seen.add(k)
+            out.append((when, comp, home, away, extra))
+
+    league_codes = {c for c, _, _ in LEAGUES}
+    try:
+        text = decode(http_get('https://www.football-data.co.uk/fixtures.csv'))
+        for r in csv.DictReader(io.StringIO(text)):
+            div = (r.get('Div') or '').strip()
+            if div not in league_codes or not (r.get('HomeTeam') or '').strip():
+                continue
+            d = r['Date'].strip()
+            fmt = '%d/%m/%Y' if len(d.split('/')[-1]) == 4 else '%d/%m/%y'
+            t = (r.get('Time') or '').strip() or '15:00'
+            dt = datetime.strptime(f'{d} {t}', fmt + ' %H:%M').replace(tzinfo=uk).astimezone(timezone.utc)
+            if not lo <= dt <= hi:
+                continue
+            add(dt.strftime('%Y-%m-%dT%H:%M:00Z'), div, r['HomeTeam'].strip(), r['AwayTeam'].strip(),
+                {'o25': fnum(r.get('Avg>2.5')), 'u25': fnum(r.get('Avg<2.5'))})
+    except Exception as e:
+        log('Terminarz lig z football-data niedostępny:', e)
+    slugs = {**ESPN_SLUG, **ESPN_LEAGUE}   # ligi z ESPN uzupełniają terminarz football-data na cały tydzień
+    for code, slug in slugs.items():
+        for i in range(horizon + 1):
+            day = (now + timedelta(days=i)).date()
+            try:
+                js = json.loads(http_get(f'{ESPN}{slug}/scoreboard?dates={day:%Y%m%d}', tries=2))
+            except Exception as e:
+                log('Terminarz ESPN', code, day, e)
+                continue
+            for ev in js.get('events') or []:
+                comp = (ev.get('competitions') or [{}])[0]
+                stype = ((comp.get('status') or ev.get('status') or {}).get('type') or {})
+                if stype.get('state') not in (None, 'pre'):
+                    continue
+                cs = comp.get('competitors') or []
+                home = next((c for c in cs if c.get('homeAway') == 'home'), None)
+                away = next((c for c in cs if c.get('homeAway') == 'away'), None)
+                when = ev.get('date') or comp.get('date') or ''
+                if not home or not away or not when:
+                    continue
+                try:
+                    dt = datetime.fromisoformat(when.replace('Z', '+00:00'))
+                except ValueError:
+                    continue
+                if not lo <= dt <= hi:
+                    continue
+                add(dt.strftime('%Y-%m-%dT%H:%M:00Z'), code, (home.get('team') or {}).get('displayName', ''),
+                    (away.get('team') or {}).get('displayName', ''), {})
+            time.sleep(0.15)
+    log(f'Terminarz: {len(out)} meczów (dziś + {horizon} dni)')
+    return out
+
+
 def load_snapshot(season_start):
     p = os.path.join(DATA, 'ucl_snapshot.csv')
     if not os.path.exists(p):
@@ -452,6 +527,40 @@ def main():
         src = 'snap' if r.get('snap') else 'api'
         matches.append([r['date'], r['comp'], team(r['home'], 'OTHER', src), team(r['away'], 'OTHER', src)] + r['v'])
 
+    # Prognozy na nadchodzące mecze
+    def resolve(raw):
+        name = NAME.get(raw) or NAMEK.get(_key(raw)) or raw
+        for k in (key(name), key(raw)):
+            if k in bykey:
+                return bykey[k]
+        return None
+
+    tips_data = None
+    try:
+        import tips as TP
+        hist = sorted(matches, key=lambda m: m[0])
+        fx, fx_at = [], {}
+        for when, comp, h, a, extra in load_fixtures(now):
+            rh, ra = resolve(h), resolve(a)
+            if not (rh and ra):
+                log('Terminarz: nie rozpoznano drużyny', comp, h, '-', a)
+                continue
+            k = (comp, rh, ra)
+            if k in fx_at:            # ten sam mecz z dwóch źródeł: zostaw wersję z kursami
+                if extra and not fx[fx_at[k]][4]:
+                    fx[fx_at[k]] = (fx[fx_at[k]][0], comp, rh, ra, extra)
+                continue
+            fx_at[k] = len(fx)
+            fx.append((when, comp, rh, ra, extra))
+        preds = TP.predict(hist, fx)
+        season_bt = TP.summary(TP.backtest(hist))
+        tips_data = {'fx': preds, 'calib': {'season': season_bt, 'prev': PREV_CALIB},
+                     'min_games': TP.MIN_GAMES, 'labels': {k: l for k, l, *_ in TP.STATS}}
+    except Exception as e:  # prognozy nie mogą zablokować strony
+        import traceback
+        log('Prognozy niedostępne:', e)
+        traceback.print_exc()
+
     used, abbr = set(), {}
     for n in order:
         a = ABBR.get(n)
@@ -467,6 +576,9 @@ def main():
     idx = {n: i for i, n in enumerate(order)}
     for m in matches:
         m[2], m[3] = idx[m[2]], idx[m[3]]
+    if tips_data:
+        for f in tips_data['fx']:
+            f['h'], f['a'] = idx[f['h']], idx[f['a']]
     matches.sort(key=lambda m: (m[0], m[1]))
     present = {m[1] for m in matches}
     comps = {c: [l, s] for c, l, s in LEAGUES if c in present}
@@ -496,6 +608,20 @@ def main():
             + head + '</head>\n<body>\n<main' + rest + '\n</body>\n</html>\n')
     os.makedirs(SITE, exist_ok=True)
     open(os.path.join(SITE, 'index.html'), 'w', encoding='utf-8').write(html)
+
+    # Osobna strona z typami (typy.html), ze wspólnym wyglądem
+    style = re.search(r'<style>(.*?)</style>', tpl, re.S).group(1)
+    links = ''.join(l + '\n' for l in re.findall(r'<link [^>]+>', tpl))
+    tdata = {'teams': [[n, abbr[n]] for n in order], 'comps': comps, 'cups': cups, 'tips': tips_data}
+    tbody = open(os.path.join(ROOT, 'scripts', 'tips_template.html'), encoding='utf-8').read() \
+        .replace('__HEAD__', links).replace('__STYLE__', style) \
+        .replace('__DATA__', json.dumps(tdata, ensure_ascii=False, separators=(',', ':'))) \
+        .replace('__ASOF__', local.strftime('%d.%m.%Y, %H:%M'))
+    thead, trest = tbody.split('<main', 1)
+    open(os.path.join(SITE, 'typy.html'), 'w', encoding='utf-8').write(
+        '<!doctype html>\n<html lang="pl">\n<head>\n<meta charset="utf-8">\n'
+        '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
+        + thead + '</head>\n<body>\n<main' + trest + '\n</body>\n</html>\n')
     open(os.path.join(SITE, '.nojekyll'), 'w').write('')
     log(f'Gotowe: {len(order)} drużyn, {len(matches)} meczów, rozgrywki: {", ".join(comps)}')
 
