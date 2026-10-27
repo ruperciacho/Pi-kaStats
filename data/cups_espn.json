@@ -3168,7 +3168,7 @@ null,
 null
 ]
 },
-"_aktualizacja": "2026-10-27 11:26 UTC",
+"_aktualizacja": "2026-10-27 13:20 UTC",
 "_dni": {
 "UCL": [
 "20260901",
@@ -3345,55 +3345,25 @@ null
 "_status": {
 "UCL": {
 "bez_statystyk": 0,
-"dni_sprawdzone": 57,
-"nowe": 54,
-"zakonczone": 54,
-"znalezione": 54
+"dni_sprawdzone": 2,
+"nowe": 0,
+"zakonczone": 0,
+"znalezione": 0
 },
 "UECL": {
 "bez_statystyk": 0,
-"dni_sprawdzone": 57,
-"nowe": 36,
-"zakonczone": 36,
-"znalezione": 36
+"dni_sprawdzone": 2,
+"nowe": 0,
+"zakonczone": 0,
+"znalezione": 0
 },
 "UEL": {
 "bez_statystyk": 0,
-"dni_sprawdzone": 57,
-"nowe": 54,
-"zakonczone": 54,
-"znalezione": 54
-},
-"_nazwy_statystyk": [
-"accurateCrosses",
-"accurateLongBalls",
-"accuratePasses",
-"blockedShots",
-"crossPct",
-"effectiveClearance",
-"effectiveTackles",
-"foulsCommitted",
-"interceptions",
-"longballPct",
-"offsides",
-"passPct",
-"penaltyKickGoals",
-"penaltyKickShots",
-"possessionPct",
-"redCards",
-"saves",
-"shotPct",
-"shotsOnTarget",
-"tacklePct",
-"totalClearance",
-"totalCrosses",
-"totalLongBalls",
-"totalPasses",
-"totalShots",
-"totalTackles",
-"wonCorners",
-"yellowCards"
-]
+"dni_sprawdzone": 2,
+"nowe": 0,
+"zakonczone": 0,
+"znalezione": 0
+}
 }
 }
 }
