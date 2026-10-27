@@ -30,8 +30,9 @@ LEAGUES = [('E0', 'Premier League', 'PL'), ('SP1', 'La Liga', 'LL'), ('I1', 'Ser
            ('D1', 'Bundesliga', 'BL'), ('F1', 'Ligue 1', 'L1')]
 CUPS = [('UCL', 'Liga Mistrzów', 'LM', 2), ('UEL', 'Liga Europy', 'LE', 3), ('UECL', 'Liga Konferencji', 'LK', 848)]
 # test modelu prognoz na sezonie 2025/26 (top 5 lig, walk-forward, scripts/tips.py)
-PREV_CALIB = {'safe': {'n': 9354, 'pred': 0.709, 'real': 0.717},
-              'risky': {'n': 9217, 'pred': 0.502, 'real': 0.501}}
+# (sumy w meczu + zdarzenia drużynowe razem)
+PREV_CALIB = {'safe': {'n': 28062, 'pred': 0.722, 'real': 0.726},
+              'risky': {'n': 25400, 'pred': 0.500, 'real': 0.506}}
 ESPN_SLUG = {'UCL': 'uefa.champions', 'UEL': 'uefa.europa', 'UECL': 'uefa.europa.conf'}
 ESPN = 'https://site.api.espn.com/apis/site/v2/sports/soccer/'
 API = 'https://v3.football.api-sports.io'
@@ -554,8 +555,9 @@ def main():
             fx_at[k] = len(fx)
             fx.append((when, comp, rh, ra, extra))
         preds = TP.predict(hist, fx)
-        calib = {'safe': {'season': TP.summary(TP.backtest(hist)), 'prev': PREV_CALIB['safe']},
-                 'risky': {'season': TP.summary(TP.backtest(hist, risky=True)), 'prev': PREV_CALIB['risky']}}
+        bt = lambda r: TP.summary(TP.backtest(hist, risky=r) + TP.backtest(hist, risky=r, scope='team'))
+        calib = {'safe': {'season': bt(False), 'prev': PREV_CALIB['safe']},
+                 'risky': {'season': bt(True), 'prev': PREV_CALIB['risky']}}
         tips_data = {'fx': preds, 'calib': calib,
                      'min_games': TP.MIN_GAMES, 'labels': {k: l for k, l, *_ in TP.STATS}}
     except Exception as e:  # prognozy nie mogą zablokować strony
