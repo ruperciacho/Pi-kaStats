@@ -1,5 +1,115 @@
 {
 "2026": {
+"401915307": {
+"away": "Internazionale",
+"comp": "UCL",
+"date": "2026-11-03",
+"home": "Feyenoord Rotterdam",
+"v": [
+0,
+3,
+11,
+11,
+2,
+6,
+5,
+4,
+7,
+13,
+1,
+2,
+null,
+null
+]
+},
+"401915308": {
+"away": "AS Roma",
+"comp": "UCL",
+"date": "2026-11-03",
+"home": "Manchester United",
+"v": [
+3,
+2,
+15,
+7,
+6,
+4,
+3,
+1,
+11,
+14,
+4,
+3,
+null,
+null
+]
+},
+"401915309": {
+"away": "Paris Saint-Germain",
+"comp": "UCL",
+"date": "2026-11-03",
+"home": "Villarreal",
+"v": [
+0,
+6,
+14,
+22,
+2,
+12,
+4,
+8,
+19,
+4,
+4,
+1,
+null,
+null
+]
+},
+"401915310": {
+"away": "Sporting CP",
+"comp": "UCL",
+"date": "2026-11-03",
+"home": "Shakhtar Donetsk",
+"v": [
+0,
+1,
+14,
+11,
+4,
+3,
+7,
+2,
+10,
+18,
+1,
+1,
+null,
+null
+]
+},
+"401915311": {
+"away": "VfB Stuttgart",
+"comp": "UCL",
+"date": "2026-11-03",
+"home": "Galatasaray",
+"v": [
+2,
+0,
+13,
+13,
+4,
+5,
+6,
+4,
+13,
+16,
+3,
+5,
+null,
+null
+]
+},
 "401915312": {
 "away": "Arsenal",
 "comp": "UCL",
@@ -40,6 +150,94 @@ null
 12,
 1,
 1,
+null,
+null
+]
+},
+"401915384": {
+"away": "Lille",
+"comp": "UCL",
+"date": "2026-11-03",
+"home": "Bodo/Glimt",
+"v": [
+0,
+0,
+4,
+9,
+4,
+2,
+3,
+4,
+12,
+8,
+0,
+1,
+null,
+null
+]
+},
+"401915385": {
+"away": "Slovan Bratislava",
+"comp": "UCL",
+"date": "2026-11-03",
+"home": "LASK Linz",
+"v": [
+4,
+0,
+29,
+7,
+10,
+5,
+8,
+2,
+5,
+9,
+0,
+2,
+null,
+null
+]
+},
+"401915386": {
+"away": "Bayern Munich",
+"comp": "UCL",
+"date": "2026-11-03",
+"home": "Atlético Madrid",
+"v": [
+0,
+2,
+9,
+19,
+3,
+5,
+4,
+4,
+13,
+3,
+1,
+2,
+null,
+null
+]
+},
+"401915387": {
+"away": "Aston Villa",
+"comp": "UCL",
+"date": "2026-11-03",
+"home": "Barcelona",
+"v": [
+3,
+0,
+16,
+9,
+8,
+1,
+4,
+8,
+14,
+9,
+1,
+3,
 null,
 null
 ]
@@ -3168,7 +3366,7 @@ null,
 null
 ]
 },
-"_aktualizacja": "2026-11-03 12:58 UTC",
+"_aktualizacja": "2026-11-04 13:15 UTC",
 "_dni": {
 "UCL": [
 "20260901",
@@ -3232,7 +3430,8 @@ null
 "20261029",
 "20261030",
 "20261031",
-"20261101"
+"20261101",
+"20261102"
 ],
 "UECL": [
 "20260901",
@@ -3296,7 +3495,8 @@ null
 "20261029",
 "20261030",
 "20261031",
-"20261101"
+"20261101",
+"20261102"
 ],
 "UEL": [
 "20260901",
@@ -3360,16 +3560,17 @@ null
 "20261029",
 "20261030",
 "20261031",
-"20261101"
+"20261101",
+"20261102"
 ]
 },
 "_status": {
 "UCL": {
 "bez_statystyk": 0,
 "dni_sprawdzone": 3,
-"nowe": 0,
-"zakonczone": 0,
-"znalezione": 9
+"nowe": 9,
+"zakonczone": 9,
+"znalezione": 18
 },
 "UECL": {
 "bez_statystyk": 0,
@@ -3383,8 +3584,38 @@ null
 "dni_sprawdzone": 3,
 "nowe": 0,
 "zakonczone": 0,
-"znalezione": 0
-}
+"znalezione": 1
+},
+"_nazwy_statystyk": [
+"accurateCrosses",
+"accurateLongBalls",
+"accuratePasses",
+"blockedShots",
+"crossPct",
+"effectiveClearance",
+"effectiveTackles",
+"foulsCommitted",
+"interceptions",
+"longballPct",
+"offsides",
+"passPct",
+"penaltyKickGoals",
+"penaltyKickShots",
+"possessionPct",
+"redCards",
+"saves",
+"shotPct",
+"shotsOnTarget",
+"tacklePct",
+"totalClearance",
+"totalCrosses",
+"totalLongBalls",
+"totalPasses",
+"totalShots",
+"totalTackles",
+"wonCorners",
+"yellowCards"
+]
 }
 }
 }
