@@ -1,5 +1,137 @@
 {
 "2026": {
+"401915301": {
+"away": "Napoli",
+"comp": "UCL",
+"date": "2026-11-04",
+"home": "FC Porto",
+"v": [
+4,
+1,
+19,
+11,
+8,
+6,
+6,
+5,
+8,
+11,
+1,
+5,
+null,
+null
+]
+},
+"401915302": {
+"away": "Sabah FK",
+"comp": "UCL",
+"date": "2026-11-04",
+"home": "Viking FK",
+"v": [
+4,
+1,
+21,
+16,
+8,
+4,
+10,
+6,
+5,
+9,
+2,
+3,
+null,
+null
+]
+},
+"401915303": {
+"away": "Club Brugge",
+"comp": "UCL",
+"date": "2026-11-04",
+"home": "PSV Eindhoven",
+"v": [
+1,
+2,
+27,
+10,
+9,
+3,
+8,
+5,
+8,
+10,
+0,
+3,
+null,
+null
+]
+},
+"401915304": {
+"away": "Real Betis",
+"comp": "UCL",
+"date": "2026-11-04",
+"home": "Borussia Dortmund",
+"v": [
+2,
+1,
+15,
+11,
+6,
+4,
+2,
+5,
+15,
+13,
+4,
+4,
+null,
+null
+]
+},
+"401915305": {
+"away": "Como",
+"comp": "UCL",
+"date": "2026-11-04",
+"home": "Lens",
+"v": [
+1,
+9,
+11,
+18,
+3,
+12,
+5,
+5,
+12,
+11,
+2,
+0,
+null,
+null
+]
+},
+"401915306": {
+"away": "Manchester City",
+"comp": "UCL",
+"date": "2026-11-04",
+"home": "RB Leipzig",
+"v": [
+2,
+3,
+14,
+12,
+6,
+5,
+5,
+3,
+20,
+7,
+4,
+2,
+null,
+null
+]
+},
 "401915307": {
 "away": "Internazionale",
 "comp": "UCL",
@@ -149,6 +281,72 @@ null
 13,
 12,
 1,
+1,
+null,
+null
+]
+},
+"401915381": {
+"away": "Arsenal",
+"comp": "UCL",
+"date": "2026-11-04",
+"home": "Slavia Prague",
+"v": [
+1,
+2,
+18,
+12,
+6,
+5,
+4,
+2,
+15,
+10,
+1,
+2,
+null,
+null
+]
+},
+"401915382": {
+"away": "Liverpool",
+"comp": "UCL",
+"date": "2026-11-04",
+"home": "Fenerbahce",
+"v": [
+3,
+2,
+17,
+22,
+6,
+6,
+4,
+12,
+13,
+12,
+1,
+1,
+null,
+null
+]
+},
+"401915383": {
+"away": "Real Madrid",
+"comp": "UCL",
+"date": "2026-11-04",
+"home": "AEK Athens",
+"v": [
+2,
+3,
+9,
+24,
+5,
+8,
+0,
+7,
+9,
+16,
+2,
 1,
 null,
 null
@@ -1646,6 +1844,28 @@ null
 11,
 2,
 2,
+null,
+null
+]
+},
+"401915551": {
+"away": "Olympiacos",
+"comp": "UEL",
+"date": "2026-11-04",
+"home": "Stade Rennais",
+"v": [
+0,
+0,
+9,
+12,
+4,
+3,
+3,
+3,
+15,
+11,
+1,
+0,
 null,
 null
 ]
@@ -3366,7 +3586,7 @@ null,
 null
 ]
 },
-"_aktualizacja": "2026-11-04 13:15 UTC",
+"_aktualizacja": "2026-11-05 13:28 UTC",
 "_dni": {
 "UCL": [
 "20260901",
@@ -3431,7 +3651,8 @@ null
 "20261030",
 "20261031",
 "20261101",
-"20261102"
+"20261102",
+"20261103"
 ],
 "UECL": [
 "20260901",
@@ -3496,7 +3717,8 @@ null
 "20261030",
 "20261031",
 "20261101",
-"20261102"
+"20261102",
+"20261103"
 ],
 "UEL": [
 "20260901",
@@ -3561,7 +3783,8 @@ null
 "20261030",
 "20261031",
 "20261101",
-"20261102"
+"20261102",
+"20261103"
 ]
 },
 "_status": {
@@ -3569,7 +3792,7 @@ null
 "bez_statystyk": 0,
 "dni_sprawdzone": 3,
 "nowe": 9,
-"zakonczone": 9,
+"zakonczone": 18,
 "znalezione": 18
 },
 "UECL": {
@@ -3577,14 +3800,14 @@ null
 "dni_sprawdzone": 3,
 "nowe": 0,
 "zakonczone": 0,
-"znalezione": 0
+"znalezione": 18
 },
 "UEL": {
 "bez_statystyk": 0,
 "dni_sprawdzone": 3,
-"nowe": 0,
-"zakonczone": 0,
-"znalezione": 1
+"nowe": 1,
+"zakonczone": 1,
+"znalezione": 18
 },
 "_nazwy_statystyk": [
 "accurateCrosses",
