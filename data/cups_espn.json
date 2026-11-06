@@ -1584,6 +1584,380 @@ null,
 null
 ]
 },
+"401915522": {
+"away": "Besiktas",
+"comp": "UEL",
+"date": "2026-11-05",
+"home": "Celtic",
+"v": [
+3,
+2,
+10,
+15,
+6,
+4,
+5,
+7,
+10,
+11,
+1,
+2,
+null,
+null
+]
+},
+"401915523": {
+"away": "Dinamo Zagreb",
+"comp": "UEL",
+"date": "2026-11-05",
+"home": "Sunderland",
+"v": [
+0,
+2,
+17,
+9,
+7,
+4,
+5,
+3,
+9,
+17,
+3,
+2,
+null,
+null
+]
+},
+"401915524": {
+"away": "NK Celje",
+"comp": "UEL",
+"date": "2026-11-05",
+"home": "SK Sturm Graz",
+"v": [
+2,
+3,
+30,
+8,
+7,
+7,
+12,
+2,
+16,
+13,
+1,
+2,
+null,
+null
+]
+},
+"401915525": {
+"away": "Lech Poznan",
+"comp": "UEL",
+"date": "2026-11-05",
+"home": "Benfica",
+"v": [
+3,
+1,
+24,
+6,
+11,
+5,
+6,
+3,
+15,
+11,
+2,
+1,
+null,
+null
+]
+},
+"401915526": {
+"away": "TSG Hoffenheim",
+"comp": "UEL",
+"date": "2026-11-05",
+"home": "Crystal Palace",
+"v": [
+1,
+1,
+13,
+15,
+5,
+5,
+5,
+5,
+13,
+15,
+5,
+3,
+null,
+null
+]
+},
+"401915527": {
+"away": "Viktoria Plzen",
+"comp": "UEL",
+"date": "2026-11-05",
+"home": "Lillestrom",
+"v": [
+0,
+1,
+15,
+17,
+4,
+11,
+3,
+6,
+7,
+10,
+2,
+4,
+null,
+null
+]
+},
+"401915528": {
+"away": "AFC Bournemouth",
+"comp": "UEL",
+"date": "2026-11-05",
+"home": "Sparta Prague",
+"v": [
+1,
+3,
+12,
+20,
+3,
+9,
+3,
+10,
+10,
+11,
+3,
+2,
+null,
+null
+]
+},
+"401915529": {
+"away": "Juventus",
+"comp": "UEL",
+"date": "2026-11-05",
+"home": "AZ Alkmaar",
+"v": [
+1,
+2,
+18,
+9,
+3,
+3,
+4,
+2,
+13,
+20,
+1,
+3,
+null,
+null
+]
+},
+"401915530": {
+"away": "Ararat-Armenia",
+"comp": "UEL",
+"date": "2026-11-05",
+"home": "Torreense",
+"v": [
+3,
+2,
+12,
+19,
+5,
+8,
+4,
+6,
+13,
+11,
+4,
+6,
+null,
+null
+]
+},
+"401915531": {
+"away": "Union St.-Gilloise",
+"comp": "UEL",
+"date": "2026-11-05",
+"home": "Celta Vigo",
+"v": [
+1,
+2,
+13,
+15,
+4,
+3,
+11,
+1,
+17,
+11,
+1,
+1,
+null,
+null
+]
+},
+"401915532": {
+"away": "OFI Crete",
+"comp": "UEL",
+"date": "2026-11-05",
+"home": "Hapoel Be'er",
+"v": [
+0,
+2,
+16,
+11,
+4,
+3,
+4,
+2,
+15,
+10,
+3,
+1,
+null,
+null
+]
+},
+"401915533": {
+"away": "Marseille",
+"comp": "UEL",
+"date": "2026-11-05",
+"home": "Bayer Leverkusen",
+"v": [
+0,
+1,
+10,
+8,
+3,
+2,
+6,
+2,
+7,
+12,
+1,
+3,
+null,
+null
+]
+},
+"401915534": {
+"away": "Ferencvaros",
+"comp": "UEL",
+"date": "2026-11-05",
+"home": "AC Milan",
+"v": [
+0,
+2,
+15,
+12,
+2,
+8,
+2,
+4,
+9,
+13,
+2,
+2,
+null,
+null
+]
+},
+"401915535": {
+"away": "Omonia Nicosia",
+"comp": "UEL",
+"date": "2026-11-05",
+"home": "NEC Nijmegen",
+"v": [
+3,
+1,
+19,
+6,
+9,
+3,
+5,
+2,
+11,
+12,
+1,
+0,
+null,
+null
+]
+},
+"401915536": {
+"away": "Jagiellonia Bialystok",
+"comp": "UEL",
+"date": "2026-11-05",
+"home": "Levski Sofia",
+"v": [
+1,
+0,
+13,
+10,
+5,
+2,
+4,
+5,
+8,
+13,
+3,
+3,
+null,
+null
+]
+},
+"401915537": {
+"away": "Lyon",
+"comp": "UEL",
+"date": "2026-11-05",
+"home": "Real Sociedad",
+"v": [
+1,
+1,
+11,
+12,
+4,
+4,
+5,
+6,
+23,
+10,
+3,
+4,
+null,
+null
+]
+},
+"401915538": {
+"away": "RB Salzburg",
+"comp": "UEL",
+"date": "2026-11-05",
+"home": "Anderlecht",
+"v": [
+2,
+0,
+12,
+8,
+7,
+3,
+5,
+4,
+14,
+20,
+4,
+3,
+null,
+null
+]
+},
 "401915539": {
 "away": "Levski Sofia",
 "comp": "UEL",
@@ -2794,6 +3168,72 @@ null,
 null
 ]
 },
+"401915740": {
+"away": "Iberia 1999",
+"comp": "UECL",
+"date": "2026-11-05",
+"home": "F.C. København",
+"v": [
+2,
+1,
+12,
+5,
+4,
+2,
+3,
+2,
+15,
+17,
+2,
+5,
+null,
+null
+]
+},
+"401915741": {
+"away": "Borac Banja Luka",
+"comp": "UECL",
+"date": "2026-11-05",
+"home": "Mjällby AIF",
+"v": [
+2,
+0,
+11,
+15,
+5,
+4,
+4,
+6,
+16,
+12,
+0,
+2,
+null,
+null
+]
+},
+"401915742": {
+"away": "Hajduk Split",
+"comp": "UECL",
+"date": "2026-11-05",
+"home": "Lincoln Red Imps",
+"v": [
+1,
+0,
+5,
+15,
+0,
+1,
+0,
+8,
+21,
+22,
+3,
+4,
+null,
+null
+]
+},
 "401915743": {
 "away": "KuPS Kuopio",
 "comp": "UECL",
@@ -2922,6 +3362,336 @@ null
 11,
 2,
 4,
+null,
+null
+]
+},
+"401915817": {
+"away": "Egnatia",
+"comp": "UECL",
+"date": "2026-11-05",
+"home": "CSU Craiova",
+"v": [
+2,
+0,
+19,
+9,
+9,
+4,
+5,
+6,
+12,
+8,
+4,
+1,
+null,
+null
+]
+},
+"401915818": {
+"away": "Jablonec",
+"comp": "UECL",
+"date": "2026-11-05",
+"home": "Riga FC",
+"v": [
+1,
+1,
+13,
+11,
+2,
+3,
+5,
+5,
+17,
+7,
+1,
+2,
+null,
+null
+]
+},
+"401915819": {
+"away": "CSKA Sofia",
+"comp": "UECL",
+"date": "2026-11-05",
+"home": "Panathinaikos",
+"v": [
+2,
+1,
+24,
+9,
+12,
+5,
+12,
+4,
+12,
+16,
+4,
+0,
+null,
+null
+]
+},
+"401915820": {
+"away": "SK Brann",
+"comp": "UECL",
+"date": "2026-11-05",
+"home": "Sint-Truidense",
+"v": [
+1,
+1,
+17,
+9,
+5,
+5,
+4,
+7,
+13,
+10,
+1,
+1,
+null,
+null
+]
+},
+"401915821": {
+"away": "Brighton & Hove Albion",
+"comp": "UECL",
+"date": "2026-11-05",
+"home": "Getafe",
+"v": [
+0,
+1,
+8,
+15,
+4,
+3,
+5,
+5,
+10,
+13,
+1,
+4,
+null,
+null
+]
+},
+"401915822": {
+"away": "Pafos",
+"comp": "UECL",
+"date": "2026-11-05",
+"home": "FC Twente",
+"v": [
+3,
+1,
+29,
+6,
+13,
+4,
+12,
+1,
+13,
+9,
+1,
+1,
+null,
+null
+]
+},
+"401915823": {
+"away": "Kauno Zalgiris",
+"comp": "UECL",
+"date": "2026-11-05",
+"home": "FC Lugano",
+"v": [
+3,
+0,
+14,
+5,
+5,
+1,
+4,
+2,
+8,
+14,
+1,
+2,
+null,
+null
+]
+},
+"401915824": {
+"away": "FC Nordsjælland",
+"comp": "UECL",
+"date": "2026-11-05",
+"home": "AS Monaco",
+"v": [
+2,
+0,
+11,
+3,
+5,
+1,
+4,
+3,
+6,
+7,
+1,
+2,
+null,
+null
+]
+},
+"401915825": {
+"away": "SC Freiburg",
+"comp": "UECL",
+"date": "2026-11-05",
+"home": "Trabzonspor",
+"v": [
+0,
+1,
+15,
+12,
+2,
+5,
+7,
+4,
+10,
+19,
+2,
+3,
+null,
+null
+]
+},
+"401915826": {
+"away": "KAA Gent",
+"comp": "UECL",
+"date": "2026-11-05",
+"home": "KuPS Kuopio",
+"v": [
+0,
+0,
+6,
+20,
+1,
+3,
+3,
+7,
+18,
+11,
+1,
+2,
+null,
+null
+]
+},
+"401915827": {
+"away": "Inter D'Escaldes",
+"comp": "UECL",
+"date": "2026-11-05",
+"home": "Red Star Belgrade",
+"v": [
+2,
+1,
+29,
+6,
+8,
+3,
+6,
+3,
+12,
+15,
+3,
+4,
+null,
+null
+]
+},
+"401915828": {
+"away": "Heart of Midlothian",
+"comp": "UECL",
+"date": "2026-11-05",
+"home": "FC Thun",
+"v": [
+3,
+1,
+18,
+15,
+8,
+4,
+4,
+5,
+26,
+8,
+4,
+1,
+null,
+null
+]
+},
+"401915829": {
+"away": "Ajax Amsterdam",
+"comp": "UECL",
+"date": "2026-11-05",
+"home": "FC Midtjylland",
+"v": [
+1,
+6,
+10,
+24,
+4,
+11,
+1,
+8,
+10,
+8,
+2,
+0,
+null,
+null
+]
+},
+"401915830": {
+"away": "Kairat Almaty",
+"comp": "UECL",
+"date": "2026-11-05",
+"home": "Atalanta",
+"v": [
+1,
+1,
+16,
+7,
+7,
+3,
+9,
+2,
+15,
+10,
+3,
+4,
+null,
+null
+]
+},
+"401915831": {
+"away": "Braga",
+"comp": "UECL",
+"date": "2026-11-05",
+"home": "AGF",
+"v": [
+0,
+0,
+14,
+26,
+5,
+8,
+2,
+7,
+7,
+14,
+2,
+2,
 null,
 null
 ]
@@ -3586,7 +4356,7 @@ null,
 null
 ]
 },
-"_aktualizacja": "2026-11-05 13:28 UTC",
+"_aktualizacja": "2026-11-06 13:12 UTC",
 "_dni": {
 "UCL": [
 "20260901",
@@ -3652,7 +4422,8 @@ null
 "20261031",
 "20261101",
 "20261102",
-"20261103"
+"20261103",
+"20261104"
 ],
 "UECL": [
 "20260901",
@@ -3718,7 +4489,8 @@ null
 "20261031",
 "20261101",
 "20261102",
-"20261103"
+"20261103",
+"20261104"
 ],
 "UEL": [
 "20260901",
@@ -3784,29 +4556,30 @@ null
 "20261031",
 "20261101",
 "20261102",
-"20261103"
+"20261103",
+"20261104"
 ]
 },
 "_status": {
 "UCL": {
 "bez_statystyk": 0,
 "dni_sprawdzone": 3,
-"nowe": 9,
-"zakonczone": 18,
-"znalezione": 18
+"nowe": 0,
+"zakonczone": 9,
+"znalezione": 9
 },
 "UECL": {
 "bez_statystyk": 0,
 "dni_sprawdzone": 3,
-"nowe": 0,
-"zakonczone": 0,
+"nowe": 18,
+"zakonczone": 18,
 "znalezione": 18
 },
 "UEL": {
 "bez_statystyk": 0,
 "dni_sprawdzone": 3,
-"nowe": 1,
-"zakonczone": 1,
+"nowe": 17,
+"zakonczone": 18,
 "znalezione": 18
 },
 "_nazwy_statystyk": [
