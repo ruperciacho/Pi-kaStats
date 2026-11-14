@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Typy na najbliższe dni</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Source+Sans+3:wght@400;500;600&display=swap">
+
+<style>
+
+/* Layout: one mobile column. Header, view switch, filter block, then team view (KPIs, chart, match list) or ranking list */
+:root{
+  --bg:#f4f5f8; --surface:#ffffff; --ink:#14162b; --ink-2:#525672; --muted:#82859c;
+  --line:#e1e2eb; --accent:#3f4fc2; --accent-soft:#eaecfb; --on-accent:#ffffff;
+  --c-league:#3f4fc2; --c-ucl:#c08317;
+  --win:#1d7647; --win-bg:#e2f2e9; --loss:#ad3535; --loss-bg:#f7e4e4; --draw:#5d607d; --draw-bg:#ebebf2;
+  --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"Source Sans 3",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e1020; --surface:#171a2d; --ink:#eceaf6; --ink-2:#b2b4cc; --muted:#7e819e;
+  --line:#292c44; --accent:#8e98f3; --accent-soft:#222650; --on-accent:#12142a;
+  --c-league:#8e98f3; --c-ucl:#e2ac4c;
+  --win:#62c993; --win-bg:#163329; --loss:#ee8484; --loss-bg:#3a1c23; --draw:#a5a7c2; --draw-bg:#25273b;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1020; --surface:#171a2d; --ink:#eceaf6; --ink-2:#b2b4cc; --muted:#7e819e;
+  --line:#292c44; --accent:#8e98f3; --accent-soft:#222650; --on-accent:#12142a;
+  --c-league:#8e98f3; --c-ucl:#e2ac4c;
+  --win:#62c993; --win-bg:#163329; --loss:#ee8484; --loss-bg:#3a1c23; --draw:#a5a7c2; --draw-bg:#25273b;
+  color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 36px}
+.wrap{max-width:600px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin:0}
+h1{font-family:var(--display);font-weight:700;font-size:40px;line-height:1;letter-spacing:.01em;text-transform:uppercase;margin:4px 0 8px;text-wrap:balance}
+.facts{display:flex;flex-wrap:wrap;gap:4px 16px;margin:0;font-size:14px;color:var(--ink-2)}
+.facts b{font-family:var(--display);font-weight:600;font-size:18px;color:var(--ink);font-variant-numeric:tabular-nums;margin-right:4px}
+.seg{display:flex;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:3px;min-width:0}
+.seg button{flex:1;border:0;background:transparent;color:var(--ink-2);font:500 14px var(--body);padding:7px 6px;border-radius:7px;cursor:pointer;white-space:nowrap}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent)}
+.seg.big button{font-size:15px;padding:9px 8px}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chips button{border:1px solid var(--line);background:var(--surface);color:var(--ink);font:500 14px var(--body);padding:6px 12px;border-radius:999px;cursor:pointer}
+.chips button[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+button:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.filters{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:12px}
+.frow{display:grid;grid-template-columns:86px minmax(0,1fr);gap:10px;align-items:center}
+.flab{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2)}
+.frow .seg{background:var(--bg)}
+.frow .chips button{background:var(--bg)}
+.frow .chips button[aria-pressed="true"]{background:var(--accent-soft)}
+select{width:100%;font:500 16px var(--body);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:9px 34px 9px 12px;appearance:none;-webkit-appearance:none;
+  background-image:linear-gradient(45deg,transparent 50%,var(--ink-2) 50%),linear-gradient(135deg,var(--ink-2) 50%,transparent 50%);
+  background-position:calc(100% - 18px) 55%,calc(100% - 13px) 55%;background-size:5px 5px;background-repeat:no-repeat}
+.kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-width:0}
+.kpi p{margin:0}
+.kl{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2)}
+.kv{font-family:var(--display);font-weight:600;font-size:30px;line-height:1.15;font-variant-numeric:tabular-nums}
+.ks{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 12px 10px}
+.ph{display:flex;justify-content:space-between;align-items:baseline;gap:6px 12px;flex-wrap:wrap;margin:0 4px 10px}
+h2{font-family:var(--display);font-weight:600;font-size:22px;line-height:1.2;margin:0;text-wrap:balance}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--ink-2)}
+.legend span{display:flex;align-items:center;gap:6px}
+.sw{width:10px;height:10px;border-radius:2px;display:inline-block}
+.dash{width:16px;border-top:2px dashed var(--ink-2);display:inline-block}
+.chart{position:relative;width:100%;height:230px}
+.list{list-style:none;margin:0;padding:0}
+.matches li{display:grid;grid-template-columns:42px minmax(0,1fr) auto 50px;gap:10px;align-items:center;padding:10px 4px;border-top:1px solid var(--line)}
+.list li:first-child{border-top:0}
+.md{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.mo{min-width:0}
+.mo p{margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mn{font-weight:500}
+.mv{font-size:13px;color:var(--muted)}
+.tag{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.04em;padding:0 5px;border-radius:4px;margin-right:5px;vertical-align:1px}
+.tag.l{background:var(--accent-soft);color:var(--c-league)}
+.tag.u{background:color-mix(in srgb,var(--c-ucl) 18%,transparent);color:var(--c-ucl)}
+.sc{font-family:var(--display);font-weight:600;font-size:17px;padding:1px 8px;border-radius:6px;font-variant-numeric:tabular-nums}
+.sc.Z{background:var(--win-bg);color:var(--win)}
+.sc.P{background:var(--loss-bg);color:var(--loss)}
+.sc.R{background:var(--draw-bg);color:var(--draw)}
+.val{font-family:var(--display);font-weight:600;font-size:26px;text-align:right;font-variant-numeric:tabular-nums}
+.rank li{border-top:1px solid var(--line)}
+.rank button{all:unset;box-sizing:border-box;width:100%;display:grid;grid-template-columns:28px minmax(0,1fr) 58px;gap:10px;align-items:center;padding:9px 4px;cursor:pointer}
+.rank button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;border-radius:6px}
+.rn{font-family:var(--display);font-weight:600;font-size:17px;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
+.rt{min-width:0;display:flex;flex-direction:column;gap:4px}
+.rt p{margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.meter{height:5px;border-radius:3px;background:var(--bg);overflow:hidden}
+.meter i{display:block;height:100%;border-radius:3px;background:var(--accent)}
+.rv{font-family:var(--display);font-weight:600;font-size:24px;text-align:right;font-variant-numeric:tabular-nums}
+.empty{margin:8px 4px 12px;color:var(--ink-2)}
+.note{font-size:13px;color:var(--muted);margin:0}
+.rank-meta{font-size:13px;color:var(--muted);margin:0 4px 6px}
+.nav{margin:12px 0 0}
+.navlink{display:inline-block;font:500 15px var(--body);color:var(--accent);border:1px solid var(--accent);border-radius:999px;padding:7px 14px;text-decoration:none}
+.navlink:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.tbar{display:flex;flex-direction:column;gap:10px}
+.slip{display:flex;flex-direction:column;gap:8px}
+.slip .row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;align-items:baseline;padding:8px 0;border-top:1px solid var(--line)}
+.slip .row:first-of-type{border-top:0}
+.slip .mn,.slip .mv{margin:0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.slip .pp{font-family:var(--display);font-weight:600;font-size:20px;font-variant-numeric:tabular-nums;text-align:right}
+.slip-sum{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;padding-top:10px;border-top:1px solid var(--line)}
+.slip-sum b{font-family:var(--display);font-weight:600;font-size:22px;font-variant-numeric:tabular-nums}
+.btn{font:500 14px var(--body);color:var(--accent);background:transparent;border:1px solid var(--accent);border-radius:999px;padding:6px 14px;cursor:pointer}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.fxl{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+.fx{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px}
+.fxh{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.fxn{font-family:var(--display);font-weight:600;font-size:21px;line-height:1.2;margin:4px 0 10px;text-wrap:balance}
+.badge{font-size:11px;font-weight:600;letter-spacing:.04em;padding:1px 6px;border-radius:4px;background:var(--draw-bg);color:var(--draw)}
+.picks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.pk{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;gap:2px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);min-width:0}
+.pk:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.pk[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.pk-top{display:flex;justify-content:space-between;align-items:baseline;gap:6px;font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-2)}
+.pk-p{font-family:var(--display);font-size:20px;letter-spacing:0;text-transform:none;color:var(--ink);font-variant-numeric:tabular-nums}
+.pk-p.hi{color:var(--win)}
+.pk-line{font-family:var(--display);font-weight:600;font-size:19px;color:var(--ink)}
+.pk-sub{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pk-mk{font-size:12px;color:var(--win)}
+.pk-mk.no{color:var(--muted)}
+.mkrow{margin:-4px 0 10px;font-size:13px;color:var(--ink-2)}
+.mkrow b{font-variant-numeric:tabular-nums;color:var(--ink)}
+.mkrow .val{color:var(--win);font-weight:600}
+.mybar{position:sticky;bottom:0;margin-top:4px;background:var(--surface);border:1px solid var(--accent);border-radius:12px;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 12px;font-size:14px;color:var(--ink-2)}
+.mybar b{font-family:var(--display);font-weight:600;font-size:20px;color:var(--ink);font-variant-numeric:tabular-nums}
+.mybar .acts{display:flex;gap:8px}
+@media (max-width:370px){.kv{font-size:26px}h1{font-size:34px}.frow{grid-template-columns:1fr;gap:6px}}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+
+/* Strona typów: jedna kolumna, filtry, lista zdarzeń od najbardziej prawdopodobnych, kupon u dołu */
+.evl{list-style:none;margin:0;padding:0}
+.evl li{border-top:1px solid var(--line)}
+.evl li:first-child{border-top:0}
+.ev{all:unset;box-sizing:border-box;width:100%;cursor:pointer;display:grid;grid-template-columns:52px minmax(0,1fr) 54px;gap:10px;align-items:center;padding:10px 4px;border-radius:8px}
+.ev:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.ev[aria-pressed="true"]{background:var(--accent-soft)}
+.evp{font-family:var(--display);font-weight:600;font-size:24px;text-align:right;font-variant-numeric:tabular-nums}
+.evp.hi{color:var(--win)}
+.evt{min-width:0;display:flex;flex-direction:column;gap:1px}
+.evn{font-weight:600}
+.evm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.evm{color:var(--ink)}
+.evx{font-size:13px;line-height:1.4;color:var(--muted);font-variant-numeric:tabular-nums}
+.evo{text-align:right;font-family:var(--display);font-weight:600;font-size:18px;font-variant-numeric:tabular-nums;line-height:1.1}
+.evo small{display:block;font-family:var(--body);font-weight:400;font-size:11px;color:var(--muted)}
+.ev[aria-pressed="true"] .evo::after{content:"✓";display:block;font-size:14px;color:var(--accent)}
+.more{margin:8px auto 4px;display:block}
+.slip .x{all:unset;cursor:pointer;color:var(--muted);font-size:18px;padding:0 4px}
+.slip .x:focus-visible{outline:2px solid var(--accent)}
+</style>
+
+</head>
+<body>
+<main class="wrap">
+  <header>
+    <p class="eyebrow">Typy · stan na 14.11.2026, 13:28</p>
+    <h1>Typy na najbliższe dni</h1>
+    <p class="facts" id="facts"></p>
+    <p class="nav"><a class="navlink" href="./">← Statystyki drużyn</a></p>
+  </header>
+
+  <section class="filters" aria-label="Filtry">
+    <div class="frow"><span class="flab">Dzień</span><div class="chips" id="day"></div></div>
+    <div class="frow"><span class="flab">Rozgrywki</span><div class="chips" id="comp"></div></div>
+    <div class="frow"><span class="flab">Zdarzenie</span><div class="chips" id="stat"></div></div>
+    <div class="frow"><span class="flab">Dla kogo</span><div class="chips" id="scope"></div></div>
+    <div class="frow"><span class="flab">Tryb</span><div class="seg" id="mode"></div></div>
+  </section>
+
+  <section class="panel">
+    <div class="ph"><h2>Od najbardziej prawdopodobnych</h2></div>
+    <p class="rank-meta" id="meta"></p>
+    <ol class="evl" id="list"></ol>
+    <p class="empty" id="empty" hidden>Brak zdarzeń dla tych filtrów.</p>
+    <button type="button" class="btn more" id="more" hidden>Pokaż więcej</button>
+  </section>
+
+  <section class="panel slip" id="slip" hidden aria-label="Twój kupon"></section>
+
+  <p class="note" id="note"></p>
+  <div class="mybar" id="mybar" hidden></div>
+</main>
+
+<script>
+const D={"teams":[["Arsenal","ARS"],["Coventry City","COV"],["Hull City","HUL"],["Manchester United","MUN"],["Everton","EVE"],["Crystal Palace","CRY"],["Ipswich Town","IPS"],["Sunderland","SUN"],["Nottingham Forest","NFO"],["Leeds United","UNI"],["Brentford","BRE"],["Tottenham Hotspur","TOT"],["Brighton","BRI"],["Aston Villa","AVL"],["Manchester City","MCI"],["Bournemouth","BOU"],["Newcastle United","NEW"],["Liverpool","LIV"],["Fulham","FUL"],["Chelsea","CHE"],["Alavés","ALA"],["Getafe","GET"],["Sevilla","SEV"],["Rayo Vallecano","RAY"],["Racing Santander","RAC"],["Villarreal","VIL"],["Espanyol","ESP"],["Levante","LEV"],["Deportivo La Coruña","DEP"],["Elche","ELC"],["Atlético Madryt","ATM"],["Málaga","MAL"],["Real Betis","BET"],["Real Sociedad","RSO"],["Athletic Bilbao","ATH"],["Valencia","VAL"],["Celta Vigo","CEL"],["Real Madryt","RMA"],["FC Barcelona","BAR"],["Osasuna","OSA"],["Inter","INT"],["Monza","MON"],["Udinese","UDI"],["Como","COM"],["Genoa","GEN"],["Napoli","NAP"],["Parma","PAR"],["Cagliari","CAG"],["Frosinone","FRO"],["Juventus","JUV"],["Venezia","VEN"],["Lecce","LEC"],["Atalanta","ATA"],["Sassuolo","SAS"],["Torino","TOR"],["AC Milan","MIL"],["Bologna","BOL"],["Lazio","LAZ"],["AS Roma","ROM"],["Fiorentina","FIO"],["Bayern Monachium","BAY"],["VfB Stuttgart","VFB"],["SV Elversberg","ELV"],["Bayer Leverkusen","B04"],["1. FC Köln","KOE"],["Hoffenheim","HOF"],["Mainz 05","MAI"],["SC Paderborn","PAD"],["RB Lipsk","RBL"],["Borussia M'gladbach","BMG"],["Union Berlin","FCU"],["Eintracht Frankfurt","SGE"],["Borussia Dortmund","BVB"],["Hamburger SV","HSV"],["Freiburg","FRE"],["Werder Brema","WER"],["Augsburg","AUG"],["Schalke 04","SCH"],["Olympique Marsylia","OM"],["Strasbourg","STR"],["RC Lens","LEN"],["Auxerre","AUX"],["Le Mans","MAN"],["Brest","BRS"],["OGC Nice","NIC"],["Lorient","LOR"],["Toulouse","TOU"],["Olympique Lyon","OL"],["Troyes","TRO"],["Paris FC","PFC"],["Angers","ANG"],["Lille","LIL"],["Le Havre","HAV"],["Monaco","MOA"],["Rennes","REN"],["Paris Saint-Germain","PSG"],["FC Porto","POR"],["Viking FK","VIK"],["Sabah FK","SAB"],["PSV Eindhoven","EIN"],["Club Brugge","BRU"],["Feyenoord Rotterdam","FEY"],["Shakhtar Donetsk","SHA"],["Sporting CP","SPO"],["Galatasaray","GAL"],["Slavia Prague","SLA"],["Fenerbahce","FEN"],["AEK Athens","ATE"],["Bodo/Glimt","GLI"],["LASK Linz","LAS"],["Slovan Bratislava","BRA"],["Celtic","CET"],["Besiktas","BES"],["Dinamo Zagreb","DIN"],["SK Sturm Graz","STU"],["NK Celje","CEJ"],["Benfica","BEN"],["Lech Poznan","POZ"],["Lillestrom","LIE"],["Viktoria Plzen","VIT"],["Sparta Prague","SPA"],["AZ Alkmaar","ALK"],["Torreense","TOE"],["Ararat-Armenia","ARM"],["Union St.-Gilloise","GIL"],["Hapoel Be'er","HAP"],["OFI Crete","CRE"],["Ferencvaros","FER"],["NEC Nijmegen","NIJ"],["Omonia Nicosia","NIO"],["Levski Sofia","LES"],["Jagiellonia Bialystok","JAG"],["Anderlecht","AND"],["RB Salzburg","SAL"],["Olympiacos","OLY"],["F.C. København","KBE"],["Iberia 1999","IBE"],["Mjällby AIF","MJA"],["Borac Banja Luka","BOR"],["Lincoln Red Imps","LIN"],["Hajduk Split","HAJ"],["KuPS Kuopio","KUO"],["AGF","AGF"],["Egnatia","EGN"],["Trabzonspor","TRA"],["Heart of Midlothian","MID"],["Pafos","PAF"],["Riga FC","RIG"],["Kairat Almaty","KAI"],["FC Lugano","LUG"],["Red Star Belgrade","BEL"],["CSU Craiova","CRA"],["Jablonec","JAB"],["Panathinaikos","PAN"],["CSKA Sofia","SOF"],["Sint-Truidense","TRU"],["SK Brann","BRN"],["FC Twente","TWE"],["Kauno Zalgiris","ZAL"],["FC Nordsjælland","NOR"],["KAA Gent","GET"],["Inter D'Escaldes","ESC"],["FC Thun","THU"],["FC Midtjylland","MIT"],["Ajax Amsterdam","AMS"],["Braga","BRG"]],"comps":{"E0":["Premier League","PL"],"SP1":["La Liga","LL"],"I1":["Serie A","SA"],"D1":["Bundesliga","BL"],"F1":["Ligue 1","L1"],"UCL":["Liga Mistrzów","LM"],"UEL":["Liga Europy","LE"],"UECL":["Liga Konferencji","LK"]},"cups":["UCL","UEL","UECL"],"tips":{"fx":[],"calib":{"safe":{"season":{"n":6102,"pred":0.725,"real":0.727},"prev":{"n":28062,"pred":0.722,"real":0.726}},"risky":{"season":{"n":5657,"pred":0.501,"real":0.51},"prev":{"n":25400,"pred":0.5,"real":0.506}}},"min_games":4,"labels":{"goals":"Bramki","shots":"Strzały","sot":"Celne","corners":"Rożne","fouls":"Faule","cards":"Kartki"}}};
+const T=D.teams, COMP=D.comps, CUPS=new Set(D.cups), TP=D.tips;
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const pct=p=>Math.round(p*100)+'%';
+const pct1=p=>(p*100).toLocaleString('pl-PL',{minimumFractionDigits:1,maximumFractionDigits:1})+'%';
+const dec=(v,n)=>v.toLocaleString('pl-PL',{minimumFractionDigits:n,maximumFractionDigits:n});
+const odds=p=>dec(1/Math.max(p,0.001),2);
+const SIDE={over:'powyżej',under:'poniżej'};
+const dayKey=ts=>{const d=new Date(ts);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
+const today=dayKey(Date.now()),tomorrow=dayKey(Date.now()+864e5),lastDay=dayKey(Date.now()+3*864e5);
+const dayLabel=k=>{if(k===today)return 'Dziś';if(k===tomorrow)return 'Jutro';const d=new Date(k+'T12:00:00');
+  return d.toLocaleDateString('pl-PL',{weekday:'short'})+' '+k.slice(8,10)+'.'+k.slice(5,7);};
+const hm=ts=>new Date(ts).toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'});
+const now=Date.now();
+
+// Zdarzenia z nadchodzących meczów (dziś + 3 dni): tryb bezpieczny (f.p) i wyższe kursy (f.r)
+const FX=(TP&&TP.fx||[]).map(f=>({...f,ts:Date.parse(f.t)})).filter(f=>f.ts>now-5*60e3&&dayKey(f.ts)<=lastDay);
+const EVM={safe:[],risky:[]};
+FX.forEach(f=>{const low=f.nh<TP.min_games||f.na<TP.min_games;
+  [['safe',f.p||[]],['risky',f.r||[]]].forEach(([mode,ps])=>ps.forEach(p=>{const sc=p.sc||'T';
+    const who=sc==='H'?T[f.h][0]:sc==='A'?T[f.a][0]:'';
+    const lab=TP.labels[p.k];
+    EVM[mode].push({f,p,low,mode,sc,day:dayKey(f.ts),
+      id:f.t+'|'+T[f.h][0]+'|'+T[f.a][0]+'|'+p.k+'|'+sc+'|'+p.s+'|'+p.l,
+      mid:f.t+'|'+f.h+'|'+f.a,match:T[f.h][0]+' – '+T[f.a][0],
+      txt:sc==='T'?lab+' łącznie '+SIDE[p.s]+' '+dec(p.l,1):who+': '+lab.toLowerCase()+' '+SIDE[p.s]+' '+dec(p.l,1)});}));});
+EVM.safe.sort((a,b)=>b.p.pr-a.p.pr||b.p.lift-a.p.lift||a.f.ts-b.f.ts);
+EVM.risky.sort((a,b)=>b.p.pr-a.p.pr||b.p.lift-a.p.lift||a.f.ts-b.f.ts);
+const ALL=EVM.safe.concat(EVM.risky);
+
+let S={day:'all',comp:'all',stat:'all',mode:'safe',scope:'all'};
+try{const s=JSON.parse(localStorage.getItem('t5-tips')||'null');if(s)for(const k in S)if(typeof s[k]==='string')S[k]=s[k];}catch(e){}
+let SLIP=[];try{SLIP=JSON.parse(localStorage.getItem('t5-slip')||'[]');}catch(e){}
+if(!(S.mode in EVM))S.mode='safe';
+const live=new Set(ALL.map(e=>e.id));SLIP=Array.isArray(SLIP)?SLIP.filter(x=>x&&live.has(x.id)):[];
+const save=()=>{try{localStorage.setItem('t5-tips',JSON.stringify(S));localStorage.setItem('t5-slip',JSON.stringify(SLIP));}catch(e){}};
+let shown=40;
+
+function chips(el,items,key,isSeg){el.innerHTML='';items.forEach(it=>{const b=document.createElement('button');b.type='button';b.id=el.id+'-'+it.k;
+  b.textContent=it.l;b.dataset.k=it.k;b.setAttribute('aria-pressed',String(S[key]===it.k));
+  b.addEventListener('click',()=>{S[key]=it.k;shown=40;save();render();});el.appendChild(b);});}
+
+function toggle(e){const at=SLIP.findIndex(x=>x.id===e.id);
+  if(at>=0)SLIP.splice(at,1);else{SLIP=SLIP.filter(x=>!(x.mid===e.mid&&x.k===e.p.k&&(x.sc||'T')===e.sc));SLIP.push({id:e.id,mid:e.mid,k:e.p.k,sc:e.sc,m:e.match,txt:e.txt,p:e.p.pr});}
+  save();render();}
+
+function renderSlip(open){const el=$('slip'),bar=$('mybar');
+  if(!SLIP.length){el.hidden=true;bar.hidden=true;return;}
+  const tot=SLIP.reduce((a,x)=>a*x.p,1),dup=new Set(SLIP.map(x=>x.mid)).size<SLIP.length;
+  const n=SLIP.length,word=n===1?'typ':n<5?'typy':'typów';
+  bar.hidden=false;
+  bar.innerHTML='<span>Twój kupon: '+n+' '+word+' · szansa <b>'+pct(tot)+'</b> · kurs min <b>'+odds(tot)+'</b></span><span class="acts"><button type="button" class="btn" id="showSlip">Pokaż</button><button type="button" class="btn" id="clrSlip">Wyczyść</button></span>';
+  $('clrSlip').addEventListener('click',()=>{SLIP=[];save();render();});
+  $('showSlip').addEventListener('click',()=>{renderSlip(true);$('slip').scrollIntoView({behavior:'smooth',block:'start'});});
+  if(open||!el.hidden){el.hidden=false;
+    el.innerHTML='<div class="ph"><h2>Twój kupon</h2></div>'+SLIP.map((x,i)=>'<div class="row"><div style="min-width:0"><p class="mn">'+esc(x.txt)+'</p><p class="mv">'+esc(x.m)+'</p></div><span><span class="pp">'+pct(x.p)+'</span><button type="button" class="x" data-i="'+i+'" aria-label="Usuń '+esc(x.txt)+'">×</button></span></div>').join('')+
+      '<div class="slip-sum"><span>Łączna szansa <b>'+pct(tot)+'</b> · kurs min <b>'+odds(tot)+'</b></span></div>'+
+      (dup?'<p class="mv">Kilka typów z jednego meczu: ich szanse mogą być powiązane, więc łączna szansa jest tylko przybliżeniem.</p>':'');
+    el.querySelectorAll('.x').forEach(b=>b.addEventListener('click',()=>{SLIP.splice(Number(b.dataset.i),1);save();render();}));}
+}
+
+function render(){
+  const EV=EVM[S.mode];
+  const days=[...new Set(EV.map(e=>e.day))].sort();
+  if(S.day!=='all'&&!days.includes(S.day))S.day='all';
+  chips($('day'),[{k:'all',l:'Wszystkie'}].concat(days.map(k=>({k,l:dayLabel(k)}))),'day');
+  const comps=Object.keys(COMP).filter(c=>EV.some(e=>e.f.c===c));
+  if(S.comp!=='all'&&!comps.includes(S.comp))S.comp='all';
+  chips($('comp'),[{k:'all',l:'Wszystkie'}].concat(comps.map(c=>({k:c,l:COMP[c][0]}))),'comp');
+  chips($('stat'),[{k:'all',l:'Wszystkie'}].concat(Object.keys(TP?TP.labels:{}).map(k=>({k,l:TP.labels[k]}))),'stat');
+  chips($('mode'),[{k:'safe',l:'Bezpieczne'},{k:'risky',l:'Wyższe kursy'}],'mode');
+  chips($('scope'),[{k:'all',l:'Wszystko'},{k:'T',l:'Mecz łącznie'},{k:'team',l:'Drużyny'}],'scope');
+  const list=EV.filter(e=>(S.day==='all'||e.day===S.day)&&(S.comp==='all'||e.f.c===S.comp)&&(S.stat==='all'||e.p.k===S.stat)&&
+    (S.scope==='all'||(S.scope==='T'?e.sc==='T':e.sc!=='T')));
+  const nm=new Set(list.map(e=>e.mid)).size;
+  $('meta').textContent=(S.mode==='safe'?'Szansa co najmniej 65%, kurs min ok. 1,2–1,5. ':'Szansa ok. 40–60%, kurs min ok. 1,7–2,5. Kurs ok. 4–5 złożysz z 2–3 takich zdarzeń z różnych meczów. ')+
+    list.length+' zdarzeń z '+nm+(nm===1?' meczu':' meczów')+'. Dotknij zdarzenia, żeby dodać je do kuponu.';
+  $('facts').innerHTML='<span><b>'+new Set(EV.map(e=>e.mid)).size+'</b>meczów</span><span><b>'+EV.length+'</b>zdarzeń</span><span><b>4</b>dni: dziś + 3</span>';
+  writeNote();
+  const sel=new Set(SLIP.map(x=>x.id)),ol=$('list');ol.innerHTML='';
+  list.slice(0,shown).forEach(e=>{const li=document.createElement('li'),b=document.createElement('button');b.type='button';b.className='ev';
+    b.setAttribute('aria-pressed',String(sel.has(e.id)));
+    const f=e.f,p=e.p,cup=CUPS.has(f.c);
+    const hist=e.sc==='T'?'hist. '+(p.hh[0]+p.ha[0])+'/'+(p.hh[1]+p.ha[1]):'hist. '+p.hh[0]+'/'+p.hh[1]+', rywal pozwalał '+p.ha[0]+'/'+p.ha[1];
+    const prog=e.sc==='T'?'prognoza '+dec(p.m,1)+' ('+esc(T[f.h][1])+' '+dec(p.eh,1)+' + '+esc(T[f.a][1])+' '+dec(p.ea,1)+')':'prognoza '+dec(p.m,1);
+    b.innerHTML='<span class="evp'+(p.pr>=0.75?' hi':'')+'">'+pct(p.pr)+'</span>'+
+      '<span class="evt"><span class="evn">'+esc(e.txt)+'</span><span class="evm">'+esc(e.match)+'</span>'+
+      '<span class="evx"><span class="tag '+(cup?'u':'l')+'">'+esc(COMP[f.c]?COMP[f.c][1]:f.c)+'</span>'+dayLabel(e.day)+' '+hm(f.ts)+' · '+prog+' · '+hist+(e.low?' · mało danych':'')+'</span></span>'+
+      '<span class="evo"><small>kurs min</small>'+odds(p.pr)+'</span>';
+    b.setAttribute('aria-label',pct(p.pr)+': '+e.txt+', '+e.match+', '+dayLabel(e.day)+' '+hm(f.ts)+'. Kurs minimalny '+odds(p.pr)+'. '+(sel.has(e.id)?'Usuń z kuponu':'Dodaj do kuponu'));
+    b.addEventListener('click',()=>toggle(e));li.appendChild(b);ol.appendChild(li);});
+  $('empty').hidden=list.length>0;
+  $('empty').textContent=TP?'Brak zdarzeń dla tych filtrów.':'Prognozy chwilowo niedostępne. Spróbuj po najbliższej aktualizacji.';
+  $('more').hidden=list.length<=shown;
+  renderSlip(false);
+}
+$('more').addEventListener('click',()=>{shown+=40;render();});
+
+function writeNote(){
+  const c=((TP&&TP.calib)||{})[S.mode]||{},cs=c.season,cp=c.prev;
+  $('note').textContent=(S.mode==='safe'?'Bezpieczne: linia najbliżej prognozy, którą model uznał za co najmniej 65% prawdopodobną, po stronie, w którą przechyla się mecz. ':
+    'Wyższe kursy: odważniejsza linia po tej samej stronie, z szansą najbliżej 50% (zakres 40–60%). ')+
+    '„Łącznie” to suma obu drużyn w meczu, a zdarzenia z nazwą drużyny dotyczą tylko jej. „Prognoza” to oczekiwana liczba (przy sumie z podziałem na drużyny). „Hist.” to ile ostatnich meczów spełniło zdarzenie: przy sumie obu drużyn, przy drużynie jej własne mecze i ile pozwalał rywal. „Kurs min” = 1 / szansa, czyli kurs, od którego zakład przestaje być stratny na dłuższą metę. '+
+    (cp?'Test na sezonie 2025/26: szacowane średnio '+pct1(cp.pred)+', weszło '+pct1(cp.real)+' ('+cp.n.toLocaleString('pl-PL')+' zdarzeń). ':'')+
+    (cs?'W tym sezonie: '+pct1(cs.pred)+' szacowane, '+pct1(cs.real)+' weszło ('+cs.n.toLocaleString('pl-PL')+'). ':'')+
+    'Model podaje uczciwe szanse, ale nie ogrywa bukmachera, a łączna szansa kuponu zakłada niezależne zdarzenia. 18+, graj odpowiedzialnie. Źródła: football-data.co.uk, ESPN.';
+}
+render();
+</script>
+
+</body>
+</html>
