@@ -1,5 +1,71 @@
 {
 "2026": {
+"401915291": {
+"away": "Viking FK",
+"comp": "UCL",
+"date": "2026-11-25",
+"home": "Atlético Madrid",
+"v": [
+2,
+0,
+20,
+9,
+9,
+1,
+6,
+1,
+7,
+9,
+0,
+2,
+null,
+null
+]
+},
+"401915292": {
+"away": "Liverpool",
+"comp": "UCL",
+"date": "2026-11-25",
+"home": "Club Brugge",
+"v": [
+0,
+3,
+17,
+13,
+5,
+4,
+8,
+4,
+9,
+13,
+0,
+0,
+null,
+null
+]
+},
+"401915293": {
+"away": "Villarreal",
+"comp": "UCL",
+"date": "2026-11-25",
+"home": "Slavia Prague",
+"v": [
+0,
+1,
+13,
+7,
+1,
+5,
+13,
+0,
+12,
+15,
+2,
+4,
+null,
+null
+]
+},
 "401915294": {
 "away": "FC Porto",
 "comp": "UCL",
@@ -436,6 +502,138 @@ null
 12,
 1,
 1,
+null,
+null
+]
+},
+"401915373": {
+"away": "Manchester United",
+"comp": "UCL",
+"date": "2026-11-25",
+"home": "Sporting CP",
+"v": [
+2,
+2,
+11,
+7,
+4,
+2,
+3,
+2,
+18,
+13,
+2,
+2,
+null,
+null
+]
+},
+"401915374": {
+"away": "AS Roma",
+"comp": "UCL",
+"date": "2026-11-25",
+"home": "Paris Saint-Germain",
+"v": [
+2,
+2,
+15,
+13,
+4,
+4,
+3,
+4,
+5,
+18,
+0,
+2,
+null,
+null
+]
+},
+"401915375": {
+"away": "Fenerbahce",
+"comp": "UCL",
+"date": "2026-11-25",
+"home": "Shakhtar Donetsk",
+"v": [
+0,
+1,
+8,
+13,
+2,
+5,
+3,
+5,
+12,
+14,
+2,
+1,
+null,
+null
+]
+},
+"401915376": {
+"away": "VfB Stuttgart",
+"comp": "UCL",
+"date": "2026-11-25",
+"home": "Internazionale",
+"v": [
+2,
+0,
+20,
+13,
+5,
+2,
+11,
+6,
+9,
+10,
+2,
+1,
+null,
+null
+]
+},
+"401915377": {
+"away": "Bayern Munich",
+"comp": "UCL",
+"date": "2026-11-25",
+"home": "Lille",
+"v": [
+2,
+1,
+15,
+12,
+3,
+7,
+3,
+4,
+2,
+11,
+0,
+1,
+null,
+null
+]
+},
+"401915378": {
+"away": "Barcelona",
+"comp": "UCL",
+"date": "2026-11-25",
+"home": "Sabah FK",
+"v": [
+1,
+4,
+8,
+25,
+3,
+14,
+4,
+6,
+9,
+8,
+1,
+0,
 null,
 null
 ]
@@ -4554,7 +4752,7 @@ null,
 null
 ]
 },
-"_aktualizacja": "2026-11-25 16:00 UTC",
+"_aktualizacja": "2026-11-26 15:44 UTC",
 "_dni": {
 "UCL": [
 "20260901",
@@ -4640,7 +4838,8 @@ null
 "20261120",
 "20261121",
 "20261122",
-"20261123"
+"20261123",
+"20261124"
 ],
 "UECL": [
 "20260901",
@@ -4726,7 +4925,8 @@ null
 "20261120",
 "20261121",
 "20261122",
-"20261123"
+"20261123",
+"20261124"
 ],
 "UEL": [
 "20260901",
@@ -4812,7 +5012,8 @@ null
 "20261120",
 "20261121",
 "20261122",
-"20261123"
+"20261123",
+"20261124"
 ]
 },
 "_status": {
@@ -4820,7 +5021,7 @@ null
 "bez_statystyk": 0,
 "dni_sprawdzone": 3,
 "nowe": 9,
-"zakonczone": 9,
+"zakonczone": 18,
 "znalezione": 18
 },
 "UECL": {
@@ -4828,14 +5029,14 @@ null
 "dni_sprawdzone": 3,
 "nowe": 0,
 "zakonczone": 0,
-"znalezione": 0
+"znalezione": 18
 },
 "UEL": {
 "bez_statystyk": 0,
 "dni_sprawdzone": 3,
 "nowe": 0,
 "zakonczone": 0,
-"znalezione": 0
+"znalezione": 18
 },
 "_nazwy_statystyk": [
 "accurateCrosses",
